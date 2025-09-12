@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "ConsoleApp\ConsoleApp.csproj", "{182FB017-999B-4095-9AB4-42AA93DDF82B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MenuSystem", "MenuSystem\MenuSystem.csproj", "{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{182FB017-999B-4095-9AB4-42AA93DDF82B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{182FB017-999B-4095-9AB4-42AA93DDF82B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{182FB017-999B-4095-9AB4-42AA93DDF82B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{182FB017-999B-4095-9AB4-42AA93DDF82B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
