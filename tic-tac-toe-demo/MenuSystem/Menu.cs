@@ -1,49 +1,100 @@
-﻿namespace MenuSystem;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
+namespace MenuSystem;
 public class Menu
 {
-    private List<MenuItem> MenuItems { get; set; } = new ();
+    //exit, back1, return to me
+    private string Title { get; set; } = default!;
+    public Dictionary<string, MenuItem> MenuItems { get; set; } = new();
+    private EMenuLevel Level { get; set; }
 
-    public void AddMenuItems(List<MenuItem> items)
+    public void AddMenuItem(string key, string value, Func<string> methodToRun)
     {
-        // check for validity
-        //add
-
-        foreach (var item in items)
+        if (MenuItems.ContainsKey(key))
         {
-            // control (dict)
-            
-            MenuItems.Add(item);
+            throw new ArgumentException($"Key {key} already exists");
+        }
+
+        MenuItems[key] = new MenuItem() { Key = key, Value = value, MethodToRun = methodToRun };
+    }
+
+    public Menu(string title, EMenuLevel level)
+    {
+        Title = title;
+        Level = level;
+
+        switch (level)
+        {
+            case EMenuLevel.Root:
+                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                break;
+            case EMenuLevel.First:
+                MenuItems["m"] = new MenuItem() { Key = "m", Value = "return to main" };
+                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                break;
+            case EMenuLevel.Deep:
+                MenuItems["b"] = new MenuItem() { Key = "b", Value = "back to previous Menu" };
+                MenuItems["m"] = new MenuItem() { Key = "m", Value = "return to main" };
+                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                break;
         }
     }
 
-    public void Run() // or public string run() , then you need to return smth
+    public string Run()
     {
-        var menuIsDone = false;
+        Console.Clear();
+        var menuRunning = true;
+        var userChoice = "";
         do
         {
-            // display menu
-            // get user input
-            // validate 
-            // execute choice
-            // loop back to top
-            
             DisplayMenu();
             Console.Write("Please enter your choice: ");
             var userInput = Console.ReadLine();
-
-            if (userInput == "X")
+            if (userInput == null)
             {
-                menuIsDone = true;
+                Console.WriteLine("Invalid choice.. Please try again.");
+                continue;
             }
-                
-        } while (!menuIsDone);
-        
+
+            userChoice = userInput.Trim().ToLower();
+            if (userChoice == "x" || userChoice == "m"  || userChoice == "b")
+            {
+                // TODO: Handle exit, return to main menu, or back
+                menuRunning = false;
+            }
+            else
+            {
+                if (MenuItems.ContainsKey(userInput))
+                {
+                    var returnValueFromMethodToRun = MenuItems[userChoice].MethodToRun?.Invoke();
+                    if (returnValueFromMethodToRun == "x")
+                    {
+                        menuRunning = false;
+                        userChoice = "x";
+                    }
+                    else if (returnValueFromMethodToRun == "m" && Level != EMenuLevel.Root)
+                    {
+                        menuRunning = false;
+                        userChoice = "m";
+                    }
+                }
+                else 
+                {
+                    Console.WriteLine("Invalid choice. Please try again.");
+                }
+            }
+            Console.WriteLine();
+        } while (menuRunning);
+
+        return userChoice; // return the user choice to the caller
     }
 
-    private void DisplayMenu()
+    public void DisplayMenu()
     {
-        foreach (var item in MenuItems)
+        Console.WriteLine(Title);
+        Console.WriteLine("-----------------------");
+        foreach (var item in MenuItems.Values)
         {
             Console.WriteLine(item);
         }
