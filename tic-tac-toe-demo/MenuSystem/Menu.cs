@@ -11,6 +11,11 @@ public class Menu
 
     public void AddMenuItem(string key, string value, Func<string> methodToRun)
     {
+        if (MenuCommands.ReservedKeys.Contains(key))
+        {
+            throw new ArgumentException($"Key {key} is reserved and cannot be used");
+        }
+        
         if (MenuItems.ContainsKey(key))
         {
             throw new ArgumentException($"Key {key} already exists");
@@ -27,16 +32,16 @@ public class Menu
         switch (level)
         {
             case EMenuLevel.Root:
-                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                MenuItems[MenuCommands.BackKey] = new MenuItem() { Key = MenuCommands.ExitKey, Value = MenuCommands.ExitValue };
                 break;
             case EMenuLevel.First:
-                MenuItems["m"] = new MenuItem() { Key = "m", Value = "return to main" };
-                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                MenuItems[MenuCommands.MainKey] = new MenuItem() { Key = MenuCommands.MainKey, Value = MenuCommands.MainValue };
+                MenuItems[MenuCommands.BackKey] = new MenuItem() { Key = MenuCommands.ExitKey, Value = MenuCommands.ExitValue };
                 break;
             case EMenuLevel.Deep:
-                MenuItems["b"] = new MenuItem() { Key = "b", Value = "back to previous Menu" };
-                MenuItems["m"] = new MenuItem() { Key = "m", Value = "return to main" };
-                MenuItems["x"] = new MenuItem() { Key = "x", Value = "exit" };
+                MenuItems[MenuCommands.BackKey] = new MenuItem() { Key = MenuCommands.BackKey, Value = MenuCommands.BackValue };
+                MenuItems[MenuCommands.MainKey] = new MenuItem() { Key = MenuCommands.MainKey, Value = MenuCommands.MainValue };
+                MenuItems[MenuCommands.BackKey] = new MenuItem() { Key = MenuCommands.ExitKey, Value = MenuCommands.ExitValue };
                 break;
         }
     }
@@ -58,25 +63,25 @@ public class Menu
             }
 
             userChoice = userInput.Trim().ToLower();
-            if (userChoice == "x" || userChoice == "m"  || userChoice == "b")
+            if (MenuCommands.ReservedKeys.Contains(userChoice))
             {
                 // TODO: Handle exit, return to main menu, or back
                 menuRunning = false;
             }
             else
             {
-                if (MenuItems.ContainsKey(userInput))
+                if (MenuItems.ContainsKey(userChoice))
                 {
                     var returnValueFromMethodToRun = MenuItems[userChoice].MethodToRun?.Invoke();
-                    if (returnValueFromMethodToRun == "x")
+                    if (returnValueFromMethodToRun == MenuCommands.ExitKey)
                     {
                         menuRunning = false;
-                        userChoice = "x";
+                        userChoice = MenuCommands.ExitKey;
                     }
-                    else if (returnValueFromMethodToRun == "m" && Level != EMenuLevel.Root)
+                    else if (returnValueFromMethodToRun == MenuCommands.MainKey && Level != EMenuLevel.Root)
                     {
                         menuRunning = false;
-                        userChoice = "m";
+                        userChoice = MenuCommands.MainKey;
                     }
                 }
                 else 
