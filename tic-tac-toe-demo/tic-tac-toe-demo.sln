@@ -9,6 +9,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLL", "BLL\BLL.csproj", "{C7170861-44AA-4BFE-BAEC-C1DD67F988E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{B5233A1B-29F0-4D5F-8FD6-F6BF8BC1D463}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleUI", "ConsoleUI\ConsoleUI.csproj", "{8461C882-4F05-49F4-A42D-97F6DF37207A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +29,17 @@ Global
 		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C08D685-6D4B-425C-A4E1-E3258B06DC7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C7170861-44AA-4BFE-BAEC-C1DD67F988E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C7170861-44AA-4BFE-BAEC-C1DD67F988E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C7170861-44AA-4BFE-BAEC-C1DD67F988E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C7170861-44AA-4BFE-BAEC-C1DD67F988E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5233A1B-29F0-4D5F-8FD6-F6BF8BC1D463}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5233A1B-29F0-4D5F-8FD6-F6BF8BC1D463}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5233A1B-29F0-4D5F-8FD6-F6BF8BC1D463}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5233A1B-29F0-4D5F-8FD6-F6BF8BC1D463}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8461C882-4F05-49F4-A42D-97F6DF37207A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8461C882-4F05-49F4-A42D-97F6DF37207A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8461C882-4F05-49F4-A42D-97F6DF37207A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8461C882-4F05-49F4-A42D-97F6DF37207A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
