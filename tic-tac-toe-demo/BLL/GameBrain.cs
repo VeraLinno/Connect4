@@ -9,7 +9,7 @@ public class GameBrain
 
     private bool NextMoveByX { get; set; } = true;
 
-    private Random random = new Random();
+    private Random rnd = new Random();
 
     public GameBrain(GameConfiguration configuration, string player1Name, string player2Name)
     {
@@ -53,8 +53,8 @@ public class GameBrain
 
     public bool BoardCoordinatesAreValid(int x, int y)
     {
-        if (x < 0 || x >= (GameConfiguration.BoardWidth - 1)) return false;
-        if (y < 0 || y >= (GameConfiguration.BoardHeight - 1)) return false;
+        if (x < 0 || x >= GameConfiguration.BoardWidth) return false;
+        if (y < 0 || y >= GameConfiguration.BoardHeight) return false;
         return true;
     }
 
@@ -100,8 +100,6 @@ public class GameBrain
             }
 
         }
-
-
         return EBoardState.Empty;
     }
 }
