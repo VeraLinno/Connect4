@@ -43,7 +43,7 @@ public class GameController
             {
                 if (int.TryParse(parts[0], out var x) && int.TryParse(parts[1], out var y))
                 {
-                    if (GameBrain.BoardCoordinatesAreValid(x, y))
+                    if (GameBrain.BoardCoordinatesAreValid(x -1, y - 1))
                     {
                         GameBrain.ProcessMove(x - 1, y - 1);
 
