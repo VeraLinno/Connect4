@@ -55,10 +55,28 @@ namespace BLL
         private (int dirX, int dirY) FlipDirection((int dirX, int dirY) direction) =>
             (-direction.dirX, -direction.dirY);
 
-        private EBoardState GetBoardCell(int x, int y)
+        private (int x, int y) GetNextMove(int x, int y, int dirX, int dirY)
         {
-            x = (x + GameConfiguration.BoardWidth) % GameConfiguration.BoardWidth;
-            return GameBoard[x, y];
+            if (x < 0)
+            {
+                x = GameConfiguration.BoardWidth - 1;  
+            } else if (x >= GameConfiguration.BoardWidth)
+            {
+                x = 0;
+            }
+            
+            if (dirX != 0 && dirY != 0) 
+            {
+                if (y < 0)
+                {
+                    y = GameConfiguration.BoardHeight - 1;  
+                } else if (x >= GameConfiguration.BoardHeight)
+                {
+                    y = 0;
+                }
+            }
+            
+            return (x, y);
         }
 
         public bool BoardCoordinatesAreValid(int x, int y)
@@ -71,8 +89,6 @@ namespace BLL
         {
             if (GameBoard[x, y] == EBoardState.Empty) return EBoardState.Empty;
 
-            var player = GameBoard[x, y];
-
             for (int directionIndex = 0; directionIndex < 4; directionIndex++)
             {
                 var (dirX, dirY) = GetDirection(directionIndex);
@@ -81,25 +97,28 @@ namespace BLL
                 
                 int nextX = x;
                 int nextY = y;
-                while (BoardCoordinatesAreValid(nextX, nextY) && GetBoardCell(nextX, nextY) == player && count < GameConfiguration.WinCondition)
+                while (BoardCoordinatesAreValid(nextX, nextY) && GameBoard[nextX, nextY] == GameBoard[x, y] && count < GameConfiguration.WinCondition)
                 {
                     count++;
                     nextX += dirX;
-                    nextY += dirY;
+                    nextY += dirY; 
+                    
+                    (nextX, nextY) = GetNextMove(nextX, nextY, dirX, dirY);
                 }
                 
                 (dirX, dirY) = FlipDirection((dirX, dirY));
                 nextX = x + dirX;
                 nextY = y + dirY;
-                while (BoardCoordinatesAreValid(nextX, nextY) && GetBoardCell(nextX, nextY) == player && count < GameConfiguration.WinCondition)
+                while (BoardCoordinatesAreValid(nextX, nextY) && GameBoard[nextX, nextY] == GameBoard[x, y] && count < GameConfiguration.WinCondition)
                 {
                     count++;
                     nextX += dirX;
                     nextY += dirY;
+                    (nextX, nextY) = GetNextMove(nextX, nextY, dirX, dirY);
                 }
 
                 if (count >= GameConfiguration.WinCondition)
-                    return player == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
+                    return GameBoard[x,y] == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
             }
 
             return EBoardState.Empty;
