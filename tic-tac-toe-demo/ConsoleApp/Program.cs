@@ -30,13 +30,60 @@ menuConfig.AddMenuItem("l", "Load", () =>
     var userChoice = Console.ReadLine();
     return "abc";
 });
-menuConfig.AddMenuItem("e", "Edit", () => " abc");
+
+menuConfig.AddMenuItem("e", "Edit", () =>
+{
+    var configs = configRepo.List();
+    for (var i = 0; i < configs.Count; i++)
+    {
+        Console.WriteLine($"{i + 1}: {configs[i]}");
+    }
+
+    Console.Write("Select config to edit, 0 to cancel: ");
+    var userChoice = Console.ReadLine();
+    
+    if (int.TryParse(userChoice, out var choice))
+    {
+        if (choice > 0 && choice <= configs.Count)
+        {
+            var id = configs[choice - 1];
+            var gameConfig = configRepo.Load(id);
+            
+            Console.Write("Write a new name for the game, leave empty to cancel: ");
+            var name = Console.ReadLine();
+            
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                gameConfig.Name = name.Trim();
+            }
+            var newFileName = configRepo.Save(gameConfig);
+            Console.WriteLine($"Configuration name updated. New file: {newFileName}");
+        }
+        else
+        {
+            Console.WriteLine("Cancelled or invalid choice.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid input.");
+    }
+
+    Console.WriteLine();
+    return "abc";
+});
+
 menuConfig.AddMenuItem("c", "Create", () =>
 {
-    configRepo.Save(new GameConfiguration(){Name = "Cylindrical"});
-    return "abc";
-
+    Console.Write("Write a name for the game, 0 to cancel: ");
+    var userChoice = Console.ReadLine();
+    if (userChoice != String.Empty)
+    {
+        configRepo.Save(new GameConfiguration() { Name = userChoice });
+    };
+    return "abc"; 
 });
+
 menuConfig.AddMenuItem("d", "Delete", () =>
 {
     var configs = configRepo.List();
