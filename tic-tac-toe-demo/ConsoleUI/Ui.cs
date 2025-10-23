@@ -91,4 +91,9 @@ public static class Ui
             7 => 2,
             _ => throw new ArgumentOutOfRangeException(nameof(index), index, null)
         };
+
+    public static void GetWinner(string win)
+    {
+        Console.WriteLine("Winner is: " + win);
+    }
 }

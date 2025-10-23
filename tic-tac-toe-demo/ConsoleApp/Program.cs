@@ -14,7 +14,7 @@ menu0.AddMenuItem("n", "New game", () =>
 
 var menuConfig = new Menu("Tic-Tac-Toe Configuration", EMenuLevel.First);
 
-var configRepo = new ConfigRepository();
+var configRepo = new ConfigRepositoryJSON();
 
 // TODO: we need to do the config logic (nagu we have gameBrain logic)
 menuConfig.AddMenuItem("l", "Load", () =>
@@ -37,7 +37,47 @@ menuConfig.AddMenuItem("c", "Create", () =>
     return "abc";
 
 });
-menuConfig.AddMenuItem("d", "Delete", () => " abc");
+menuConfig.AddMenuItem("d", "Delete", () =>
+{
+    var configs = configRepo.List();
+    for (var i = 0; i < configs.Count; i++)
+    {
+        Console.WriteLine($"{i + 1}: {configs[i]}");
+    }
+
+    Console.Write("Select config to delete, 0 to cancel: ");
+    var userChoice = Console.ReadLine();
+    
+    if (int.TryParse(userChoice, out var choice))
+    {
+        if (choice > 0 && choice <= configs.Count)
+        {
+            var id = configs[choice - 1];
+            Console.Write($"Are you sure you want to delete '{id}'? (y/n): ");
+            var confirm = Console.ReadLine();
+            if (confirm?.ToLower() == "y")
+            {
+                configRepo.Delete(id);
+                Console.WriteLine($"Deleted configuration: {id}");
+            }
+            else
+            {
+                Console.WriteLine("Cancelled.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Cancelled or invalid choice.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Invalid input.");
+    }
+
+    Console.WriteLine();
+    return "abc";
+});
 
 menu0.AddMenuItem("c", "Game Configuration", menuConfig.Run);
 

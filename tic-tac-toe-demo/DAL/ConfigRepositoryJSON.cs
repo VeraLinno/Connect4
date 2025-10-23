@@ -1,10 +1,12 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using BLL;
 
 namespace DAL;
 
 // cannot be static because of the interface
-public class ConfigRepository: IRepository<GameConfiguration>
+public class ConfigRepositoryJSON: IRepository<GameConfiguration>
 {
     public List<string> List()
     {
@@ -24,16 +26,38 @@ public class ConfigRepository: IRepository<GameConfiguration>
     {
         // data -> json
         var jsonStr = JsonSerializer.Serialize(data);
-        // save the data
+        
         // filename
-        // TODO: sanitize data.Name, its unsafe to use it directly
-        var filename = $"{data.Name} - {data.BoardWidth}x{data.BoardHeight} - win: {data.WinCondition} " + ".json";
+        var safeName = SanitizeFileName(data.Name);
+        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        var filename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}.json";
+        
         // file location
         var fullFileName = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + filename;
+        
         // save file
         File.WriteAllText(fullFileName, jsonStr);
         return filename;
     }
+
+    private static string SanitizeFileName(string name, int maxLength = 128)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "unnamed";
+
+        var invalid = Path.GetInvalidFileNameChars();
+        var sb = new StringBuilder(name.Length);
+        foreach (var ch in name)
+        {
+            sb.Append(invalid.Contains(ch) ? '_' : ch);
+        }
+        var sanitized = sb.ToString().Trim();
+
+        if (sanitized.Length > maxLength)
+            sanitized = sanitized.Substring(0, maxLength);
+        
+        return Regex.Replace(sanitized, "_{2,}", "_").Trim('_');
+    }
+
 
     public GameConfiguration Load(string id)
     {
@@ -47,9 +71,16 @@ public class ConfigRepository: IRepository<GameConfiguration>
     public void Delete(string id)
     {
         var jsonFilename = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + id + ".json";
-        if (File.Exists(jsonFilename))
+        try
         {
-            File.Delete(jsonFilename);
+            if (File.Exists(jsonFilename))
+            {
+                File.Delete(jsonFilename);
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new IOException($"Failed to delete config file {jsonFilename}", ex);
         }
     }
 }

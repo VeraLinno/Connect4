@@ -50,8 +50,8 @@ public class GameController
                         var winner = GameBrain.GetWinner(x - 1, y - 1);
                         if (winner != EBoardState.Empty)
                         {
-                            // TODO: move to ui
-                            Console.WriteLine("Winner is: " + (winner == EBoardState.XWin ? "X" : "O"));
+                            string win = winner == EBoardState.XWin ? "X" : "O";
+                            Ui.GetWinner(win);
                             break;
                         }
                     }
