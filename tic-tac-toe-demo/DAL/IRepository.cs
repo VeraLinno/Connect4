@@ -7,7 +7,7 @@
 
 public interface IRepository<TData>
 {
-    List<string> List();
+    List<(string id, string description)> List();
     // crud
     
     string Save(TData data);

@@ -2,8 +2,19 @@
 using ConsoleApp;
 using DAL;
 using MenuSystem;
+using Microsoft.EntityFrameworkCore;
 
 Console.WriteLine("Hello, TIC-TAC-TOE!");
+IRepository<GameConfiguration> configRepo;
+
+// Choose ONE!
+
+// configRepo = new ConfigRepositoryJSON();
+
+using var dbContext = GetDbContext();
+configRepo = new ConfigRepositoryEF(dbContext);
+
+
 var menu0 = new Menu("Tic-Tac-Toe Main Menu", EMenuLevel.Root);
 menu0.AddMenuItem("n", "New game", () =>
 {
@@ -12,9 +23,8 @@ menu0.AddMenuItem("n", "New game", () =>
     return "abc";
 });
 
-var menuConfig = new Menu("Tic-Tac-Toe Configuration", EMenuLevel.First);
+var menuConfig = new Menu("Tic-Tac-Toe Configurations", EMenuLevel.First);
 
-var configRepo = new ConfigRepositoryJSON();
 
 // TODO: we need to do the config logic (nagu we have gameBrain logic)
 menuConfig.AddMenuItem("l", "Load", () =>
@@ -23,7 +33,7 @@ menuConfig.AddMenuItem("l", "Load", () =>
     var data = configRepo.List();
     foreach (var configName in data)
     {
-        Console.WriteLine((count + 1) + ": " + configName);
+        Console.WriteLine((count + 1) + ": " + configName.description);
         count++;
     }
     Console.Write("Select config to load, 0 to skip: ");
@@ -36,7 +46,7 @@ menuConfig.AddMenuItem("e", "Edit", () =>
     var configs = configRepo.List();
     for (var i = 0; i < configs.Count; i++)
     {
-        Console.WriteLine($"{i + 1}: {configs[i]}");
+        Console.WriteLine($"{i + 1}: {configs[i].description}");
     }
 
     Console.Write("Select config to edit, 0 to cancel: ");
@@ -46,8 +56,8 @@ menuConfig.AddMenuItem("e", "Edit", () =>
     {
         if (choice > 0 && choice <= configs.Count)
         {
-            var id = configs[choice - 1];
-            var gameConfig = configRepo.Load(id);
+            var selected = configs[choice - 1];
+            var gameConfig = configRepo.Load(selected.id);
             
             Console.Write("Write a new name for the game, leave empty to cancel: ");
             var name = Console.ReadLine();
@@ -89,7 +99,7 @@ menuConfig.AddMenuItem("d", "Delete", () =>
     var configs = configRepo.List();
     for (var i = 0; i < configs.Count; i++)
     {
-        Console.WriteLine($"{i + 1}: {configs[i]}");
+        Console.WriteLine($"{i + 1}: {configs[i].description}");
     }
 
     Console.Write("Select config to delete, 0 to cancel: ");
@@ -99,13 +109,13 @@ menuConfig.AddMenuItem("d", "Delete", () =>
     {
         if (choice > 0 && choice <= configs.Count)
         {
-            var id = configs[choice - 1];
-            Console.Write($"Are you sure you want to delete '{id}'? (y/n): ");
+            var selected = configs[choice - 1];
+            Console.Write($"Are you sure you want to delete '{selected.id}'? (y/n): ");
             var confirm = Console.ReadLine();
             if (confirm?.ToLower() == "y")
             {
-                configRepo.Delete(id);
-                Console.WriteLine($"Deleted configuration: {id}");
+                configRepo.Delete(selected.id);
+                Console.WriteLine($"Deleted configuration: {selected.id}");
             }
             else
             {
@@ -130,3 +140,28 @@ menu0.AddMenuItem("c", "Game Configuration", menuConfig.Run);
 
 menu0.Run();
 Console.WriteLine("Exit......");
+
+AppDbContext GetDbContext()
+{
+    // ========================= DB STUFF ========================
+    var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    homeDirectory = homeDirectory + Path.DirectorySeparatorChar;
+
+// We are using SQLite
+    var connectionString = $"Data Source={homeDirectory}tictactoe.db";
+
+    var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
+        .UseSqlite(connectionString)
+        .EnableDetailedErrors()
+        .EnableSensitiveDataLogging()
+        //.LogTo(Console.WriteLine)
+        .Options;
+
+    var dbContext = new AppDbContext(contextOptions);
+    
+    // apply any pending migrations (recreates db as needed)
+    dbContext.Database.Migrate();
+        
+    
+    return dbContext;
+}

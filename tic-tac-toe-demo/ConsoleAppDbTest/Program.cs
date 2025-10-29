@@ -16,7 +16,7 @@ var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
     .UseSqlite(connectionString)
     .EnableDetailedErrors()
     .EnableSensitiveDataLogging()
-    .LogTo(Console.WriteLine)
+    //.LogTo(Console.WriteLine)
     .Options;
 
 // gets disposed correctly, when variable goes out of scope

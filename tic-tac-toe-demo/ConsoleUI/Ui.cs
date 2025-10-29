@@ -22,7 +22,11 @@ public static class Ui
             else
             {
                 Console.ResetColor();
-                Console.Write("|" + GetNumberRepresentation(x + 1) + "|"); 
+                Console.Write("|");
+                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                Console.Write(GetNumberRepresentation(x + 1)); 
+                Console.ResetColor();
+                Console.Write("|");
             }
         }
         Console.WriteLine(); 
@@ -44,7 +48,9 @@ public static class Ui
             Console.WriteLine("---");
            
             Console.ResetColor();
+            Console.ForegroundColor = ConsoleColor.DarkBlue;
             Console.Write(GetNumberRepresentation(y + 1));
+            Console.ResetColor();
             
             for (int x = -3; x < gameBoard.GetLength(0) + 3; x++)
             {

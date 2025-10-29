@@ -8,15 +8,20 @@ namespace DAL;
 // cannot be static because of the interface
 public class ConfigRepositoryJSON: IRepository<GameConfiguration>
 {
-    public List<string> List()
+    public List<(string id, string description)> List()
     {
         var dir = FileSystemHelpers.GetConfigDirectory();
-        var result = new List<string>();
+        var result = new List<(string id, string description)>();
+        
         foreach (var fullFileName in Directory.EnumerateFiles(dir))
         {
             var filename =  Path.GetFileName(fullFileName);
             if (!filename.EndsWith(".json")) continue;
-            result.Add(Path.GetFileNameWithoutExtension(filename));
+            result.Add(
+                (
+                    Path.GetFileName(filename),
+                    Path.GetFileNameWithoutExtension(filename))
+            );
         }
         return result;
     }
