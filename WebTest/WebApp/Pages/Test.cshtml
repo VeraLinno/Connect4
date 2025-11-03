@@ -1,0 +1,23 @@
+﻿@page
+@model WebApp.Pages.Test
+
+@if (Model.HasError == null || Model.HasError == true)
+{
+    <form method="post">
+        UserName: <input asp-for="UserName" placeholder="some name"/>
+        <input type="submit" value="Submit"/>
+    </form>
+    if (Model.HasError == true)
+    {
+        <div>Error</div>
+    }
+}
+else
+{
+    @if (Model.HasError == false)
+    {
+        <div>Hello there, general @Model.FinalUserName</div>
+    }
+}
+
+

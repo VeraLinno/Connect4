@@ -30,7 +30,7 @@ public class GameController
             Ui.LoadBoard(GameBrain.GetBoard());
             Ui.ShowNextPlayer(GameBrain.IsNextPlayerX());
 
-            Console.Write("Choice (x,y):");
+            Console.Write("Choice (x):");
             var input = Console.ReadLine();
             if (input?.ToLower() == "x")
             {
@@ -38,22 +38,28 @@ public class GameController
             }
             
             if (input == null ) continue;
-            var parts = input.Split(",");
-            if (parts.Length == 2)
+            if (int.TryParse(input, out var column))
             {
-                if (int.TryParse(parts[0], out var x) && int.TryParse(parts[1], out var y))
+                column -= 1;
+                if (column >= 0 && column < GameBrain.GetBoard().GetLength(0))
                 {
-                    if (GameBrain.BoardCoordinatesAreValid(x -1, y - 1))
+                    GameBrain.ProcessMove(column);
+                    
+                    int row = 0;
+                    for (int r = 0; r < GameBrain.GetBoard().GetLength(1); r++)
                     {
-                        GameBrain.ProcessMove(x - 1, y - 1);
-
-                        var winner = GameBrain.GetWinner(x - 1, y - 1);
-                        if (winner != EBoardState.Empty)
+                        if (GameBrain.GetBoard()[column, r] != EBoardState.Empty)
                         {
-                            string win = winner == EBoardState.XWin ? "X" : "O";
-                            Ui.GetWinner(win);
+                            row = r;
                             break;
                         }
+                    }
+                    var winner = GameBrain.GetWinner(column, row);
+                    if (winner != EBoardState.Empty)
+                    {
+                        string win = winner == EBoardState.XWin ? "X" : "O";
+                        Ui.GetWinner(win);
+                        break;
                     }
                 }
             }

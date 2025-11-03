@@ -30,15 +30,18 @@ namespace BLL
 
         public bool IsNextPlayerX() => NextMoveByX;
 
-        public void ProcessMove(int x, int y)
+        public void ProcessMove(int x)
         {
             if (x < 0 || x >= GameConfiguration.BoardWidth) return;
-            if (y < 0 || y >= GameConfiguration.BoardHeight) return;
-
-            if (GameBoard[x, y] == EBoardState.Empty)
+            
+            for (int row = GameConfiguration.BoardHeight - 1; row >= 0; row--)
             {
-                GameBoard[x, y] = NextMoveByX ? EBoardState.X : EBoardState.O;
-                NextMoveByX = !NextMoveByX;
+                if (GameBoard[x, row] == EBoardState.Empty)
+                {
+                    GameBoard[x, row] = NextMoveByX ? EBoardState.X : EBoardState.O;
+                    NextMoveByX = !NextMoveByX;
+                    break;
+                }
             }
         }
 
@@ -46,7 +49,7 @@ namespace BLL
             directionIndex switch
             {
                 0 => (-1, -1), // Diagonal up-left
-                1 => (0, -1),  // Vertical
+                1 => (0, -1),  // Vertical up
                 2 => (1, -1),  // Diagonal up-right
                 3 => (1, 0),   // Horizontal
                 _ => (0, 0)
@@ -55,34 +58,10 @@ namespace BLL
         private (int dirX, int dirY) FlipDirection((int dirX, int dirY) direction) =>
             (-direction.dirX, -direction.dirY);
 
-        private (int x, int y) GetNextMove(int x, int y, int dirX, int dirY)
-        {
-            if (x < 0)
-            {
-                x = GameConfiguration.BoardWidth - 1;  
-            } else if (x >= GameConfiguration.BoardWidth)
-            {
-                x = 0;
-            }
-            
-            if (dirX != 0 && dirY != 0) 
-            {
-                if (y < 0)
-                {
-                    y = GameConfiguration.BoardHeight - 1;  
-                } else if (x >= GameConfiguration.BoardHeight)
-                {
-                    y = 0;
-                }
-            }
-            
-            return (x, y);
-        }
-
         public bool BoardCoordinatesAreValid(int x, int y)
         {
-            return x >= 0 && x < (GameConfiguration.BoardWidth) && 
-                   y >= 0 && y < (GameConfiguration.BoardHeight);
+            return x >= 0 && x < GameConfiguration.BoardWidth &&
+                   y >= 0 && y < GameConfiguration.BoardHeight;
         }
 
         public EBoardState GetWinner(int x, int y)
@@ -92,33 +71,31 @@ namespace BLL
             for (int directionIndex = 0; directionIndex < 4; directionIndex++)
             {
                 var (dirX, dirY) = GetDirection(directionIndex);
+                int count = 1;
 
-                int count = 0;
-                
-                int nextX = x;
-                int nextY = y;
-                while (BoardCoordinatesAreValid(nextX, nextY) && GameBoard[nextX, nextY] == GameBoard[x, y] && count < GameConfiguration.WinCondition)
-                {
-                    count++;
-                    nextX += dirX;
-                    nextY += dirY; 
-                    
-                    (nextX, nextY) = GetNextMove(nextX, nextY, dirX, dirY);
-                }
-                
-                (dirX, dirY) = FlipDirection((dirX, dirY));
-                nextX = x + dirX;
-                nextY = y + dirY;
+                int nextX = x + dirX;
+                int nextY = y + dirY;
+
                 while (BoardCoordinatesAreValid(nextX, nextY) && GameBoard[nextX, nextY] == GameBoard[x, y] && count < GameConfiguration.WinCondition)
                 {
                     count++;
                     nextX += dirX;
                     nextY += dirY;
-                    (nextX, nextY) = GetNextMove(nextX, nextY, dirX, dirY);
+                }
+
+                (dirX, dirY) = FlipDirection((dirX, dirY));
+                nextX = x + dirX;
+                nextY = y + dirY;
+
+                while (BoardCoordinatesAreValid(nextX, nextY) && GameBoard[nextX, nextY] == GameBoard[x, y] && count < GameConfiguration.WinCondition)
+                {
+                    count++;
+                    nextX += dirX;
+                    nextY += dirY;
                 }
 
                 if (count >= GameConfiguration.WinCondition)
-                    return GameBoard[x,y] == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
+                    return GameBoard[x, y] == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
             }
 
             return EBoardState.Empty;

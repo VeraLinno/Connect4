@@ -20,7 +20,6 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
 
         foreach (var dbConf in dbConfigs)
         {
-            // Kuvame kasutajale ainult tema antud nime
             res.Add((dbConf.Id.ToString(), dbConf.Name));
         }
 
@@ -92,7 +91,6 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
 
     private static string SanitizeFileName(string name, int maxLength = 128)
     {
-        // Sama loogika mis JSON-is
         var invalid = Path.GetInvalidFileNameChars();
         var sanitized = new string(name.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray());
         sanitized = Regex.Replace(sanitized, "_{2,}", "_").Trim('_');
