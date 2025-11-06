@@ -9,16 +9,16 @@ IRepository<GameConfiguration> configRepo;
 
 // Choose ONE!
 
-// configRepo = new ConfigRepositoryJSON();
+configRepo = new ConfigRepositoryJSON();
 
-using var dbContext = GetDbContext();
-configRepo = new ConfigRepositoryEF(dbContext);
+//using var dbContext = GetDbContext();
+//configRepo = new ConfigRepositoryEF(dbContext);
 
 
 var menu0 = new Menu("Connect4 Main Menu", EMenuLevel.Root);
 menu0.AddMenuItem("n", "New game", () =>
 {
-    var controller = new GameController();
+    var controller = new GameController(configRepo);
     controller.GameLoop();
     return "abc";
 });
@@ -28,20 +28,25 @@ var menuConfig = new Menu("Connect4 Configurations", EMenuLevel.First);
 
 menuConfig.AddMenuItem("l", "Load", () =>
 {
-    ConfigMenu.Load(configRepo);
+    var loadedConfig = ConfigMenu.Load(configRepo);
+    if (loadedConfig != null)
+    {
+        var controller = new GameController(configRepo, loadedConfig);
+        controller.GameLoop();
+    }
+    else
+    {
+        Console.WriteLine("No configuration loaded.");
+    }
+
     return "abc";
 });
+
 
 menuConfig.AddMenuItem("e", "Edit", () =>
 {
     ConfigMenu.Edit(configRepo);
     return "abc";
-});
-
-menuConfig.AddMenuItem("c", "Create", () =>
-{
-    ConfigMenu.Create(configRepo);
-    return "abc"; 
 });
 
 menuConfig.AddMenuItem("d", "Delete", () =>
@@ -77,7 +82,7 @@ AppDbContext GetDbContext()
     
     // apply any pending migrations (recreates db as needed)
     dbContext.Database.Migrate();
-        
+    
     
     return dbContext;
 }

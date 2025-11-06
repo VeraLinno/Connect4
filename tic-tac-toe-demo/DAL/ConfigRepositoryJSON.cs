@@ -11,7 +11,7 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
     public List<(string id, string description)> List()
     {
         var dir = FileSystemHelpers.GetConfigDirectory();
-        var result = new List<(string id, string description)>();
+        var result = new List<(string id, string description, DateTime lastUpdate)>();
         
         foreach (var fullFileName in Directory.EnumerateFiles(dir))
         {
@@ -20,23 +20,28 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
             result.Add(
                 (
                     Path.GetFileName(filename),
-                    Path.GetFileNameWithoutExtension(filename))
+                    Path.GetFileNameWithoutExtension(filename),
+                    File.GetLastWriteTime(fullFileName))
             );
         }
-        return result;
-    }
+        var sorted = result
+            .OrderByDescending(x => x.lastUpdate)
+            .Select(x => (x.id, x.description))
+            .ToList();
 
-    // TODO: what if we just need to update already existing config (with filename change)
+        return sorted;
+    }
+    
     public string Save(GameConfiguration data)
     {
         // data -> json
         var jsonStr = JsonSerializer.Serialize(data);
-        
         // filename
         var safeName = SanitizeFileName(data.Name);
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-        var filename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}.json";
-        
+        var baseFilename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
+        var filename = baseFilename.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? baseFilename : baseFilename + ".json";
+                    
         // file location
         var fullFileName = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + filename;
         
@@ -66,8 +71,10 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
 
     public GameConfiguration Load(string id)
     {
-        var jsonFilename = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + id + ".json";
-        var jsonText =  File.ReadAllText(jsonFilename);
+        var fileName = id.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? id : id + ".json";
+        var fullPath = Path.Combine(FileSystemHelpers.GetConfigDirectory(), fileName);
+
+        var jsonText =  File.ReadAllText(fullPath);
         var conf = JsonSerializer.Deserialize<GameConfiguration>(jsonText);
         
         return conf ?? throw new NullReferenceException("Json deserialization returned null. Data:" + jsonText);
@@ -75,7 +82,9 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
 
     public void Delete(string id)
     {
-        var jsonFilename = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + id + ".json";
+        var fileName = id.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? id : id + ".json";
+
+        var jsonFilename = Path.Combine(FileSystemHelpers.GetConfigDirectory(), fileName);
         try
         {
             if (File.Exists(jsonFilename))

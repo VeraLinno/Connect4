@@ -100,5 +100,37 @@ namespace BLL
 
             return EBoardState.Empty;
         }
+        
+        public List<List<EBoardState>> GetBoardAsList()
+        {
+            var list = new List<List<EBoardState>>();
+            for (int y = 0; y < GameConfiguration.BoardHeight; y++)
+            {
+                var row = new List<EBoardState>();
+                for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+                {
+                    row.Add(GameBoard[x, y]);
+                }
+                list.Add(row);
+            }
+            return list;
+        }
+
+        public void SetBoardFromList(List<List<EBoardState>>? list)
+        {
+            if (list == null) return;
+            for (int y = 0; y < GameConfiguration.BoardHeight && y < list.Count; y++)
+            {
+                for (int x = 0; x < GameConfiguration.BoardWidth && x < list[y].Count; x++)
+                {
+                    GameBoard[x, y] = list[y][x];
+                }
+            }
+        }
+        public GameConfiguration GetConfiguration()
+        {
+            return GameConfiguration;
+        }
+
     }
 }

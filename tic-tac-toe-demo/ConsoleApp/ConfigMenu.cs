@@ -1,26 +1,53 @@
-﻿
-using BLL;
+﻿using BLL;
 using DAL;
 
 namespace ConsoleApp
 {
     public static class ConfigMenu
     {
-        public static void Load(IRepository<GameConfiguration> configRepo)
+        public static GameConfiguration? Load(IRepository<GameConfiguration> configRepo)
         {
             var data = configRepo.List();
+            if (data.Count == 0)
+            {
+                Console.WriteLine("No saved configurations found.");
+                return null;
+            }
+
             for (int i = 0; i < data.Count; i++)
             {
                 Console.WriteLine($"{i + 1}: {data[i].description}");
             }
 
-            Console.Write("Select config to load, 0 to skip: ");
+            Console.Write("Select config to load, 0 to cancel: ");
             var userChoice = Console.ReadLine();
+
+            if (int.TryParse(userChoice, out var choice))
+            {
+                if (choice > 0 && choice <= data.Count)
+                {
+                    var selected = data[choice - 1];
+                    var loadedConfig = configRepo.Load(selected.id);
+
+                    Console.WriteLine($"Loaded: {loadedConfig.Name} ({loadedConfig.BoardWidth}x{loadedConfig.BoardHeight})");
+
+                    return loadedConfig;
+                }
+            }
+
+            Console.WriteLine("Cancelled or invalid choice.");
+            return null;
         }
+
 
         public static void Edit(IRepository<GameConfiguration> configRepo)
         {
             var configs = configRepo.List();
+            if (configs.Count == 0)
+            {
+                Console.WriteLine("No configurations to edit found.");
+            }
+            
             for (var i = 0; i < configs.Count; i++)
             {
                 Console.WriteLine($"{i + 1}: {configs[i].description}");
@@ -41,11 +68,11 @@ namespace ConsoleApp
 
                     if (!string.IsNullOrWhiteSpace(name))
                     {
+                        configRepo.Delete(selected.id);
                         gameConfig.Name = name.Trim();
+                        var newFile = configRepo.Save(gameConfig);
+                        Console.WriteLine($"Configuration name updated. New file: {newFile}");
                     }
-
-                    var newFileName = configRepo.Save(gameConfig);
-                    Console.WriteLine($"Configuration name updated. New file: {newFileName}");
                 }
                 else
                 {
@@ -60,19 +87,14 @@ namespace ConsoleApp
             Console.WriteLine();
         }
 
-        public static void Create(IRepository<GameConfiguration> configRepo)
-        {
-            Console.Write("Write a name for the game, 0 to cancel: ");
-            var userChoice = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(userChoice))
-            {
-                configRepo.Save(new GameConfiguration() { Name = userChoice });
-            }
-        }
-
         public static void Delete(IRepository<GameConfiguration> configRepo)
         {
             var configs = configRepo.List();
+            if (configs.Count == 0)
+            {
+                Console.WriteLine("No configurations to delete found.");
+            }
+            
             for (var i = 0; i < configs.Count; i++)
             {
                 Console.WriteLine($"{i + 1}: {configs[i].description}");

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using BLL;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
@@ -34,11 +35,10 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
         if (existing == null)
         {
             data.Id = Guid.NewGuid();
+            data.BoardStateJson = JsonSerializer.Serialize(data.BoardState);
+            
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-
-            var baseName = string.IsNullOrWhiteSpace(data.Name)
-                ? "unnamed"
-                : SanitizeFileName(data.Name);
+            var baseName = string.IsNullOrWhiteSpace(data.Name) ? "unnamed" : SanitizeFileName(data.Name);
             
             data.Name = $"{baseName} {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
             _dbContext.GameConfigurations.Add(data);
@@ -48,11 +48,10 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
             existing.BoardWidth = data.BoardWidth;
             existing.BoardHeight = data.BoardHeight;
             existing.WinCondition = data.WinCondition;
+            existing.BoardStateJson = JsonSerializer.Serialize(data.BoardState);
             
             var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            var baseName = string.IsNullOrWhiteSpace(data.Name)
-                ? "unnamed"
-                : SanitizeFileName(data.Name);
+            var baseName = string.IsNullOrWhiteSpace(data.Name) ? "unnamed" : SanitizeFileName(data.Name);
 
             existing.Name = $"{baseName} {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
         }
