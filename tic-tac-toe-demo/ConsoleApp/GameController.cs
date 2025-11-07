@@ -45,24 +45,7 @@ public class GameController
             
             if (input?.ToLower() == "s")
             {
-                var currentConfig = _gameBrain.GetConfiguration();
-                currentConfig.BoardState = _gameBrain.GetBoardAsList();
-
-                Console.Write("Write a name for the game, 0 to cancel: ");
-                var userChoice = Console.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(userChoice))
-                {
-                    currentConfig.Name = userChoice;
-                    var savedFile = _configRepo.Save(currentConfig);
-                    
-                    Console.WriteLine($"Game saved to: {savedFile}");
-                }
-                else
-                {
-                    Console.WriteLine("Save cancelled.");
-                }
-
+                Save();
                 continue;
             }
 
@@ -89,28 +72,33 @@ public class GameController
                         string win = winner == EBoardState.XWin ? "X" : "O";
                         Ui.GetWinner(win);
                         
-                        var currentConfig = _gameBrain.GetConfiguration();
-                        currentConfig.BoardState = _gameBrain.GetBoardAsList();
-
-                        Console.Write("Write a name for the game, 0 to cancel: ");
-                        var userChoice = Console.ReadLine();
-
-                        if (!string.IsNullOrWhiteSpace(userChoice))
-                        {
-                            currentConfig.Name = userChoice;
-                            var savedFile = _configRepo.Save(currentConfig);
-                    
-                            Console.WriteLine($"Game saved to: {savedFile}");
-                        }
-                        else
-                        {
-                            Console.WriteLine("Save cancelled.");
-                        }
+                        Save();
                         gameOver = true;
                     }
                 }
             }
 
         } while (!gameOver);
+    }
+
+    public void Save()
+    {
+        var currentConfig = _gameBrain.GetConfiguration();
+        currentConfig.BoardState = _gameBrain.GetBoardAsList();
+
+        Console.Write("Write a name for the game, 0 to cancel: ");
+        var userChoice = Console.ReadLine();
+
+        if (!string.IsNullOrWhiteSpace(userChoice))
+        {
+            currentConfig.Name = userChoice;
+            var savedFile = _configRepo.Save(currentConfig);
+                    
+            Console.WriteLine($"Game saved to: {savedFile}");
+        }
+        else
+        {
+            Console.WriteLine("Save cancelled.");
+        }
     }
 }
