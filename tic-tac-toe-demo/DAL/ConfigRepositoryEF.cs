@@ -32,12 +32,12 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
         var existing = _dbContext.GameConfigurations
             .FirstOrDefault(x => x.Id == data.Id);
 
+        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
         if (existing == null)
         {
             data.Id = Guid.NewGuid();
             data.BoardStateJson = JsonSerializer.Serialize(data.BoardState);
             
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
             var baseName = string.IsNullOrWhiteSpace(data.Name) ? "unnamed" : SanitizeFileName(data.Name);
             
             data.Name = $"{baseName} {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
@@ -50,10 +50,8 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
             existing.WinCondition = data.WinCondition;
             existing.BoardStateJson = JsonSerializer.Serialize(data.BoardState);
             
-            var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-            var baseName = string.IsNullOrWhiteSpace(data.Name) ? "unnamed" : SanitizeFileName(data.Name);
-
-            existing.Name = $"{baseName} {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
+            var cleanedName = Regex.Replace(existing.Name, @" - \d{4}-\d{2}-\d{2}_\d{2}\.\d{2}\.\d{2}$", "");
+            existing.Name = $"{cleanedName} - {timestamp}";
         }
 
         _dbContext.SaveChanges();

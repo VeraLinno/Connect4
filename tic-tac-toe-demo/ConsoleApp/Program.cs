@@ -9,10 +9,10 @@ IRepository<GameConfiguration> configRepo;
 
 // Choose ONE!
 
-configRepo = new ConfigRepositoryJSON();
+//configRepo = new ConfigRepositoryJSON();
 
-//using var dbContext = GetDbContext();
-//configRepo = new ConfigRepositoryEF(dbContext);
+using var dbContext = GetDbContext();
+configRepo = new ConfigRepositoryEF(dbContext);
 
 
 var menu0 = new Menu("Connect4 Main Menu", EMenuLevel.Root);

@@ -34,21 +34,54 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
     
     public string Save(GameConfiguration data)
     {
+        var dir = FileSystemHelpers.GetConfigDirectory();
+    
+        // does file exist
+        var existingFile = Directory.EnumerateFiles(dir, "*.json")
+            .FirstOrDefault(file =>
+            {
+                try
+                {
+                    var json = File.ReadAllText(file);
+                    var conf = JsonSerializer.Deserialize<GameConfiguration>(json);
+                    return conf?.Id == data.Id;
+                }
+                catch
+                {
+                    return false;
+                }
+            });
+
         // data -> json
-        var jsonStr = JsonSerializer.Serialize(data);
-        // filename
+        var jsonStr = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        
+        // new file
         var safeName = SanitizeFileName(data.Name);
         var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
         var baseFilename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
-        var filename = baseFilename.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? baseFilename : baseFilename + ".json";
-                    
-        // file location
-        var fullFileName = FileSystemHelpers.GetConfigDirectory() + Path.DirectorySeparatorChar + filename;
+        var filename = baseFilename.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+            ? baseFilename
+            : baseFilename + ".json";
+
+        var fullFileName = Path.Combine(dir, filename);
         
-        // save file
+        // if exist - delete old one
+        if (existingFile != null && File.Exists(existingFile))
+        {
+            try
+            {
+                File.Delete(existingFile);
+            }
+            catch (IOException ex)
+            {
+                throw new IOException($"Failed to delete old config file {existingFile}", ex);
+            }
+        }
+        
         File.WriteAllText(fullFileName, jsonStr);
         return filename;
     }
+
 
     private static string SanitizeFileName(string name, int maxLength = 128)
     {

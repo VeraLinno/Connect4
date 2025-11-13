@@ -8,10 +8,12 @@ public class GameController
 {
     private readonly IRepository<GameConfiguration> _configRepo;
     private readonly GameBrain _gameBrain;
+    private readonly GameConfiguration? _existingConfig;
 
     public GameController(IRepository<GameConfiguration> configRepo, GameConfiguration? existingConfig = null)
     {
         _configRepo = configRepo;
+        _existingConfig = existingConfig;
 
         if (existingConfig == null)
         {
@@ -81,24 +83,33 @@ public class GameController
         } while (!gameOver);
     }
 
-    public void Save()
+    private void Save()
     {
         var currentConfig = _gameBrain.GetConfiguration();
         currentConfig.BoardState = _gameBrain.GetBoardAsList();
 
-        Console.Write("Write a name for the game, 0 to cancel: ");
-        var userChoice = Console.ReadLine();
-
-        if (!string.IsNullOrWhiteSpace(userChoice))
+        if (_existingConfig != null)
         {
-            currentConfig.Name = userChoice;
+            currentConfig.Name = _existingConfig.Name;
             var savedFile = _configRepo.Save(currentConfig);
-                    
-            Console.WriteLine($"Game saved to: {savedFile}");
+            Console.WriteLine($"Existing game updated: {savedFile}");
         }
         else
         {
-            Console.WriteLine("Save cancelled.");
+            Console.Write("Write a name for the game, 0 to cancel: ");
+            var userChoice = Console.ReadLine(); 
+        
+            if (!string.IsNullOrWhiteSpace(userChoice))
+            {
+                currentConfig.Name = userChoice;
+                var savedFile = _configRepo.Save(currentConfig);
+                    
+                Console.WriteLine($"Game saved to: {savedFile}");
+            }
+            else
+            {
+                Console.WriteLine("Save cancelled.");
+            }
         }
     }
 }
