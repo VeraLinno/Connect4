@@ -30,6 +30,29 @@ public class GameController
             _gameBrain.SetBoardFromList(existingConfig.BoardState);
         }
     }
+    
+    public GameController(IRepository<GameConfiguration> configRepo, string player1Name, string player2Name, int width, int height, GameConfiguration? existingConfig = null)
+    {
+        _configRepo = configRepo;
+        _existingConfig = existingConfig;
+
+        if (existingConfig == null)
+        {
+            var newConfig = new GameConfiguration
+            {
+                Player1Name = player1Name,
+                Player2Name = player2Name,
+                BoardWidth = width > 0 ? width : 5,
+                BoardHeight = height > 0 ? height : 5
+            };
+            _gameBrain = new GameBrain(newConfig, player1Name, player2Name, width, height);
+        }
+        else
+        {
+            _gameBrain = new GameBrain(existingConfig, player1Name, player2Name, width, height);
+            _gameBrain.SetBoardFromList(existingConfig.BoardState);
+        }
+    }
 
     public void GameLoop()
     {

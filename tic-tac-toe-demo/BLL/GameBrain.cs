@@ -13,6 +13,17 @@ namespace BLL
 
         private Random random = new Random();
 
+        public GameBrain(GameConfiguration configuration, string player1Name, string player2Name, int width, int height)
+        {
+            GameConfiguration = configuration;
+            Player1Name = player1Name;
+            Player2Name = player2Name;
+            
+            if (width > 0) GameConfiguration.BoardWidth = width;
+            if (height > 0) GameConfiguration.BoardHeight = height;
+            GameBoard = new EBoardState[configuration.BoardWidth, configuration.BoardHeight];
+        }
+        
         public GameBrain(GameConfiguration configuration, string player1Name, string player2Name)
         {
             GameConfiguration = configuration;

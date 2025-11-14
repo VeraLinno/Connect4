@@ -9,10 +9,10 @@ IRepository<GameConfiguration> configRepo;
 
 // Choose ONE!
 
-configRepo = new ConfigRepositoryJSON();
+//configRepo = new ConfigRepositoryJSON();
 
-//using var dbContext = GetDbContext();
-//configRepo = new ConfigRepositoryEF(dbContext);
+using var dbContext = GetDbContext();
+configRepo = new ConfigRepositoryEF(dbContext);
 
 
 var menu0 = new Menu("Connect4 Main Menu", EMenuLevel.Root);
@@ -25,10 +25,39 @@ menu0.AddMenuItem("n", "New game", () =>
 
     Console.Write("Enter name for Player 2: ");
     var p2 = Console.ReadLine();
-    if (string.IsNullOrWhiteSpace(p1))
+    if (string.IsNullOrWhiteSpace(p2))
         p2 = "Player 2";
     
     var controller = new GameController(configRepo, p1, p2);
+    controller.GameLoop();
+    return "abc";
+});
+
+menu0.AddMenuItem("u", "Customized new game", () =>
+{
+    Console.Write("Enter width for the game: ");
+    var widthInput = Console.ReadLine();
+    int width = 5;
+    if (!string.IsNullOrWhiteSpace(widthInput))
+        int.TryParse(widthInput, out width);
+
+    Console.Write("Enter height for the game: ");
+    var heightInput = Console.ReadLine();
+    int height = 5;
+    if (!string.IsNullOrWhiteSpace(heightInput))
+        int.TryParse(heightInput, out height);
+    
+    Console.Write("Enter name for Player 1: ");
+    var p1 = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(p1))
+        p1 = "Player 1";
+
+    Console.Write("Enter name for Player 2: ");
+    var p2 = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(p2))
+        p2 = "Player 2";
+    
+    var controller = new GameController(configRepo, p1, p2, width, height);
     controller.GameLoop();
     return "abc";
 });

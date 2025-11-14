@@ -6,18 +6,18 @@ public static class Ui
 {
     public static void ShowNextPlayer(string nextPlayer)
     {
-        Console.WriteLine("Next player:" + nextPlayer);
+        Console.WriteLine("Next player: " + nextPlayer);
     }
     
     public static void LoadBoard(EBoardState[, ]  gameBoard)
     {
         Console.Write("   ");
-        for (int x = -3; x < gameBoard.GetLength(0) + 3; x++)
+        for (int x = -(gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++)
         {
             if (x < 0 || x >= gameBoard.GetLength(0))
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("[" + GetNumberRepresentation(GetNewIndex(x) + 1) + "]");
+                Console.Write("[" + GetNumberRepresentation(GetNewIndex(x, gameBoard.GetLength(0) + 1)) + "]");
             }
             else
             {
@@ -33,7 +33,7 @@ public static class Ui
         
         for (int y = 0; y < gameBoard.GetLength(1); y++) 
         {
-            for (int x = -3; x < gameBoard.GetLength(0) + 3; x++) {
+            for (int x = - (gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++) {
                 if (x < 1 || x > gameBoard.GetLength(0))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -52,12 +52,12 @@ public static class Ui
             Console.Write(GetNumberRepresentation(y + 1));
             Console.ResetColor();
             
-            for (int x = -3; x < gameBoard.GetLength(0) + 3; x++)
+            for (int x = -(gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++)
             {
                 if (x < 0 || x >= gameBoard.GetLength(0))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write("[" + GetCellRepresentation(gameBoard[GetNewIndex(x), y]) + "]");
+                    Console.Write("[" + GetCellRepresentation(gameBoard[GetNewIndex(x, gameBoard.GetLength(0)), y]) + "]");
                 }
                 else
                 {
@@ -86,17 +86,12 @@ public static class Ui
             _ => " ? "
         };
 
-    private static int GetNewIndex(int index) =>
-        index switch
-        {
-            -3 => 2,
-            -2 => 3,
-            -1 => 4,
-            5 => 0,
-            6 => 1,
-            7 => 2,
-            _ => throw new ArgumentOutOfRangeException(nameof(index), index, null)
-        };
+    private static int GetNewIndex(int index, int boardWidth)
+    {
+        int newIndex = ((index % boardWidth) + boardWidth) % boardWidth;
+        return newIndex;
+    }
+
 
     public static void GetWinner(string win)
     {
