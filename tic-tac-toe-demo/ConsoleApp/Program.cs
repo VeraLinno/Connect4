@@ -9,16 +9,26 @@ IRepository<GameConfiguration> configRepo;
 
 // Choose ONE!
 
-//configRepo = new ConfigRepositoryJSON();
+configRepo = new ConfigRepositoryJSON();
 
-using var dbContext = GetDbContext();
-configRepo = new ConfigRepositoryEF(dbContext);
+//using var dbContext = GetDbContext();
+//configRepo = new ConfigRepositoryEF(dbContext);
 
 
 var menu0 = new Menu("Connect4 Main Menu", EMenuLevel.Root);
 menu0.AddMenuItem("n", "New game", () =>
 {
-    var controller = new GameController(configRepo);
+    Console.Write("Enter name for Player 1: ");
+    var p1 = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(p1))
+        p1 = "Player 1";
+
+    Console.Write("Enter name for Player 2: ");
+    var p2 = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(p1))
+        p2 = "Player 2";
+    
+    var controller = new GameController(configRepo, p1, p2);
     controller.GameLoop();
     return "abc";
 });
@@ -31,7 +41,13 @@ menuConfig.AddMenuItem("l", "Load", () =>
     var loadedConfig = ConfigMenu.Load(configRepo);
     if (loadedConfig != null)
     {
-        var controller = new GameController(configRepo, loadedConfig);
+        var controller = new GameController(
+            configRepo,
+            loadedConfig.Player1Name,
+            loadedConfig.Player2Name,
+            loadedConfig
+        );
+
         controller.GameLoop();
     }
     else
@@ -69,7 +85,7 @@ AppDbContext GetDbContext()
     homeDirectory = homeDirectory + Path.DirectorySeparatorChar;
 
 // We are using SQLite
-    var connectionString = $"Data Source={homeDirectory}tictactoe.db";
+    var connectionString = $"Data Source={homeDirectory}connect4.db";
 
     var contextOptions = new DbContextOptionsBuilder<AppDbContext>()
         .UseSqlite(connectionString)

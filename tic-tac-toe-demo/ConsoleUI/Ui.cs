@@ -4,9 +4,9 @@ namespace ConsoleUI;
 
 public static class Ui 
 {
-    public static void ShowNextPlayer(bool isNextPlayer)
+    public static void ShowNextPlayer(string nextPlayer)
     {
-        Console.WriteLine("Next player:" + (isNextPlayer ? "X" : "O"));
+        Console.WriteLine("Next player:" + nextPlayer);
     }
     
     public static void LoadBoard(EBoardState[, ]  gameBoard)

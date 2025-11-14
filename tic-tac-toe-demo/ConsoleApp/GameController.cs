@@ -10,19 +10,23 @@ public class GameController
     private readonly GameBrain _gameBrain;
     private readonly GameConfiguration? _existingConfig;
 
-    public GameController(IRepository<GameConfiguration> configRepo, GameConfiguration? existingConfig = null)
+    public GameController(IRepository<GameConfiguration> configRepo, string player1Name, string player2Name, GameConfiguration? existingConfig = null)
     {
         _configRepo = configRepo;
         _existingConfig = existingConfig;
 
         if (existingConfig == null)
         {
-            var newConfig = new GameConfiguration();
-            _gameBrain = new GameBrain(newConfig, "Player 1", "Player 2");
+            var newConfig = new GameConfiguration
+            {
+                Player1Name = player1Name,
+                Player2Name = player2Name
+            };
+            _gameBrain = new GameBrain(newConfig, player1Name, player2Name);
         }
         else
         {
-            _gameBrain = new GameBrain(existingConfig, "Player 1", "Player 2");
+            _gameBrain = new GameBrain(existingConfig, player1Name, player2Name);
             _gameBrain.SetBoardFromList(existingConfig.BoardState);
         }
     }
@@ -35,7 +39,10 @@ public class GameController
             Console.Clear();
 
             Ui.LoadBoard(_gameBrain.GetBoard());
-            Ui.ShowNextPlayer(_gameBrain.IsNextPlayerX());
+            string nextPlayer = _gameBrain.IsNextPlayerX() 
+                ? _gameBrain.GameConfiguration.Player1Name + " (X)" 
+                : _gameBrain.GameConfiguration.Player2Name + " (O)";
+            Ui.ShowNextPlayer(nextPlayer);
 
             Console.Write("Choice (x) ('s' to save, 'x' to exit): ");
             var input = Console.ReadLine();
@@ -71,7 +78,9 @@ public class GameController
                     var winner = _gameBrain.GetWinner(column, row);
                     if (winner != EBoardState.Empty)
                     {
-                        string win = winner == EBoardState.XWin ? "X" : "O";
+                        string win = winner == EBoardState.XWin 
+                            ? _gameBrain.GameConfiguration.Player1Name + " (X)" 
+                            : _gameBrain.GameConfiguration.Player2Name + " (O)";
                         Ui.GetWinner(win);
                         
                         Save();

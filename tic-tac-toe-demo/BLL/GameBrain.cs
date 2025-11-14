@@ -5,7 +5,7 @@ namespace BLL
     public class GameBrain
     {
         private EBoardState[,] GameBoard { get; set; }
-        private GameConfiguration GameConfiguration { get; set; }
+        public GameConfiguration GameConfiguration { get; set; }
         private string Player1Name { get; set; }
         private string Player2Name { get; set; }
 
