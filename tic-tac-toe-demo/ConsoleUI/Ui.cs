@@ -11,13 +11,17 @@ public static class Ui
     
     public static void LoadBoard(EBoardState[, ]  gameBoard)
     {
+        //TODO: round up
+        //double index = gameBoard.GetLength(0) / 2;
+        //var result = Math.Ceiling(index);
+        
         Console.Write("   ");
         for (int x = -(gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++)
         {
             if (x < 0 || x >= gameBoard.GetLength(0))
             {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write("[" + GetNumberRepresentation(GetNewIndex(x, gameBoard.GetLength(0) + 1)) + "]");
+                Console.Write("[" + GetNumberRepresentation(GetNewIndex(x, gameBoard.GetLength(0)) + 1) + "]");
             }
             else
             {
