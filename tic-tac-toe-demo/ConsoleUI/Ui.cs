@@ -12,11 +12,11 @@ public static class Ui
     public static void LoadBoard(EBoardState[, ]  gameBoard)
     {
         //TODO: round up
-        //double index = gameBoard.GetLength(0) / 2;
-        //var result = Math.Ceiling(index);
+        //int CeilDiv(int a, int b) => (a + b - 1) / b;
+        //int half = CeilDiv(gameBoard.GetLength(0), 2);
         
         Console.Write("   ");
-        for (int x = -(gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++)
+        for (int x = -((gameBoard.GetLength(0) + 1) / 2); x < gameBoard.GetLength(0) + ((gameBoard.GetLength(0) + 1) / 2); x++)
         {
             if (x < 0 || x >= gameBoard.GetLength(0))
             {
@@ -37,16 +37,16 @@ public static class Ui
         
         for (int y = 0; y < gameBoard.GetLength(1); y++) 
         {
-            for (int x = - (gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++) {
+            for (int x = - ((gameBoard.GetLength(0) + 1) / 2); x < gameBoard.GetLength(0) + ((gameBoard.GetLength(0) + 1) / 2); x++) {
                 if (x < 1 || x > gameBoard.GetLength(0))
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write("---+");
+                    Console.Write("---+-");
                 }
                 else
                 {
                     Console.ResetColor();
-                    Console.Write("---+"); 
+                    Console.Write("---+-"); 
                 }
             }
             Console.WriteLine("---");
@@ -56,7 +56,7 @@ public static class Ui
             Console.Write(GetNumberRepresentation(y + 1));
             Console.ResetColor();
             
-            for (int x = -(gameBoard.GetLength(0) / 2); x < gameBoard.GetLength(0) + (gameBoard.GetLength(0) / 2); x++)
+            for (int x = -((gameBoard.GetLength(0) + 1) / 2); x < gameBoard.GetLength(0) + ((gameBoard.GetLength(0) + 1) / 2); x++)
             {
                 if (x < 0 || x >= gameBoard.GetLength(0))
                 {
