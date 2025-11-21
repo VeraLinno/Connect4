@@ -1,10 +1,13 @@
-﻿namespace Domain;
+﻿using System.ComponentModel.DataAnnotations;
 
-public class ToDo
+namespace Domain;
+
+public class ToDo : BaseEntity
 {
-    public string Description { get; set; }
-    public string IsDone { get; set; }
-    public string IsHidden { get; set; }
+    [MaxLength(128)]
+    public string Description { get; set; } = default!;
+    public bool IsDone { get; set; }
+    public bool IsHidden { get; set; }
 
     public Guid CategoryId { get; set; }
     public Category? Category { get; set; }
