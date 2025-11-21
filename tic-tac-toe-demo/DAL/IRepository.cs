@@ -8,8 +8,9 @@
 public interface IRepository<TData>
 {
     List<(string id, string description)> List();
-    // crud
+    Task<List<(string id, string description)>> ListAsync();
     
+    // crud
     string Save(TData data);
     TData Load(string id);
     void Delete(string id);

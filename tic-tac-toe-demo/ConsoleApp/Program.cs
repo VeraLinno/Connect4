@@ -9,10 +9,10 @@ IRepository<GameConfiguration> configRepo;
 
 // Choose ONE!
 
-//configRepo = new ConfigRepositoryJSON();
+//configRepo = new ConfigRepositoryJson();
 
 using var dbContext = GetDbContext();
-configRepo = new ConfigRepositoryEF(dbContext);
+configRepo = new ConfigRepositoryEf(dbContext);
 
 
 var menu0 = new Menu("Connect4 Main Menu", EMenuLevel.Root);
@@ -124,7 +124,7 @@ AppDbContext GetDbContext()
 {
     // ========================= DB STUFF ========================
     var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    homeDirectory = homeDirectory + Path.DirectorySeparatorChar;
+    homeDirectory += Path.DirectorySeparatorChar;
 
 // We are using SQLite
     var connectionString = $"Data Source={homeDirectory}connect4.db";

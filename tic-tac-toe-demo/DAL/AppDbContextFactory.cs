@@ -10,7 +10,7 @@ namespace DAL
             var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             homeDirectory = homeDirectory + System.IO.Path.DirectorySeparatorChar;
 
-            var connectionString = $"Data Source={homeDirectory}tictactoe.db";
+            var connectionString = $"Data Source={homeDirectory}connect4.db";
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseSqlite(connectionString)

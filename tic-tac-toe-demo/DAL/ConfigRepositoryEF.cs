@@ -5,11 +5,11 @@ using System.Text.RegularExpressions;
 
 namespace DAL;
 
-public class ConfigRepositoryEF : IRepository<GameConfiguration>
+public class ConfigRepositoryEf : IRepository<GameConfiguration>
 {
     private readonly AppDbContext _dbContext;
 
-    public ConfigRepositoryEF(AppDbContext dbContext)
+    public ConfigRepositoryEf(AppDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -22,6 +22,22 @@ public class ConfigRepositoryEF : IRepository<GameConfiguration>
         foreach (var dbConf in dbConfigs)
         {
             res.Add((dbConf.Id.ToString(), dbConf.Name));
+        }
+
+        return res;
+    }
+    
+    public async Task<List<(string id, string description)>> ListAsync()
+    {
+        var res = new List<(string id, string description)>();
+        foreach (var dbConf in await _dbContext.GameConfigurations.ToListAsync())
+        {
+            res.Add(
+                (
+                    dbConf.Id.ToString(), 
+                    dbConf.Name
+                )!
+            );
         }
 
         return res;

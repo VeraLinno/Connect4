@@ -11,7 +11,7 @@ namespace BLL
 
         private bool NextMoveByX { get; set; } = true;
 
-        private Random random = new Random();
+        private Random _random = new Random();
 
         public GameBrain(GameConfiguration configuration, string player1Name, string player2Name, int width, int height)
         {

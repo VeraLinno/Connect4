@@ -6,7 +6,7 @@ using BLL;
 namespace DAL;
 
 // cannot be static because of the interface
-public class ConfigRepositoryJSON: IRepository<GameConfiguration>
+public class ConfigRepositoryJson: IRepository<GameConfiguration>
 {
     public List<(string id, string description)> List()
     {
@@ -30,6 +30,11 @@ public class ConfigRepositoryJSON: IRepository<GameConfiguration>
             .ToList();
 
         return sorted;
+    }
+    
+    public async Task<List<(string id, string description)>> ListAsync()
+    {
+        return List();
     }
     
     public string Save(GameConfiguration data)

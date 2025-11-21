@@ -1,0 +1,62 @@
+﻿@page
+@using System.Web
+@using BLL
+@model WebApp.Pages.GamePlay
+
+<h1>Connect 4 game</h1>
+
+@if (!string.IsNullOrWhiteSpace(Model.Winner))
+{
+    <h2 style="color: green;">Winner: @Model.Winner</h2>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <table class="table table-bordered">
+            <tr>
+                <td>&nbsp;</td>
+                @for (int x = 0; x < Model.GameBrain.GetBoard().GetLength(0); x++)
+                {
+                    <td>@GetNumberRepresentation(x + 1)</td>
+                }
+            </tr>
+            @for (int y = 0; y < Model.GameBrain.GetBoard().GetLength(1); y++)
+            {
+                <tr>
+                    <td>@GetNumberRepresentation(y + 1)</td>
+                    @for (int x = 0; x < Model.GameBrain.GetBoard().GetLength(0); x++)
+                    {
+                        <td onclick="redirectToPage(@x,@y)" style="cursor: pointer;">@GetCellRepresentation(Model.GameBrain.GetBoard()[x, y])</td>
+                    }
+                </tr>
+            }
+        </table>
+    </div>
+</div>
+
+<script>
+    // Function to redirect to another page
+    function redirectToPage(x,y) {
+        console.log(x,y);
+        window.location.href = "?id=@Uri.EscapeDataString(Model.GameId)&x=" + x + "&y=" + y;
+    }
+</script>
+
+@functions
+{
+    private static string GetNumberRepresentation(int number)
+    {
+        return " " + (number < 10 ? "0" + number : number.ToString());
+    }
+
+    private static string GetCellRepresentation(EBoardState cellValue) =>
+        cellValue switch
+        {
+            EBoardState.Empty => "   ",
+            EBoardState.X => " X ",
+            EBoardState.O => " O ",
+            EBoardState.XWin => "XXX",
+            EBoardState.OWin => "OOO",
+            _ => " ? "
+        };
+}
