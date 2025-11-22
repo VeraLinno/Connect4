@@ -9,6 +9,7 @@ public class GameConfiguration: BaseEntity
     public int BoardWidth { get; set; } = 5;
     public int BoardHeight { get; set; } = 5;
     public int WinCondition { get; set; } = 4;
+    public bool IsVsAi { get; set; } = false;
     
     public string Player1Name { get; set; } = "Player1";
     public string Player2Name { get; set; } = "Player2";

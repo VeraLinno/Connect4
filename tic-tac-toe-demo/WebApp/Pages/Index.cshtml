@@ -1,0 +1,36 @@
+﻿@page
+@model WebApp.Pages.IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<a asp-page="./NewGame" class="btn btn-primary mb-3">New Game</a>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Saved Games</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var conf in Model.Configurations)
+    {
+        <tr>
+            <td>@conf.description</td>
+
+            <td>
+                <a asp-page="/GamePlay" asp-route-id="@conf.id" class="btn btn-success btn-sm">
+                    Continue
+                </a>
+
+                <form method="post" asp-page-handler="Delete" asp-route-id="@conf.id" 
+                      style="display:inline;">
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

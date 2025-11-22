@@ -1,35 +1,39 @@
 ﻿@page
-@model WebApp.Pages.NewGame
+@model WebApp.Pages.NewGameModel
 
+<h2>New Game</h2>
 
-<h1>Start a new game</h1>
+<form method="post" class="mt-1">
 
-<form method="post">
-    <div class="row">
-        <div class="col-md-4">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="ConfigId" class="control-label">Config Id</label>
-                <select asp-for="ConfigId" class="form-select" asp-items="Model.ConfigurationSelectList"></select>
-                <span asp-validation-for="ConfigId" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Player1Name" class="control-label">Player 1 name</label>
-                <input asp-for="Player1Name" class="form-control" />
-                <span asp-validation-for="Player1Name" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="Player2Name" class="control-label">Player 2 name</label>
-                <input asp-for="Player2Name" class="form-control" />
-                <span asp-validation-for="Player2Name" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <input type="submit" value="Start" class="btn btn-primary" />
-            </div>
-        </div>
+    <div class="mb-1">
+        <label class="form-label">Game name:</label>
+        <input type="text" asp-for="GameName" class="form-control"/>
     </div>
+
+    <div class="mb-1">
+        <label class="form-label">Player 1 Name:</label>
+        <input type="text" asp-for="Player1Name" class="form-control"/>
+    </div>
+
+    <div class="mb-1">
+        <label class="form-label">Player 2 Name:</label>
+        <input type="text" asp-for="Player2Name" class="form-control"/>
+    </div>
+
+    <div class="mb-1 form-check">
+        <input type="checkbox" asp-for="IsVsAi" class="form-check-input"/>
+        <label class="form-check-label">Play vs AI?</label>
+    </div>
+
+    <div class="mb-1">
+        <label class="form-label">Board Width:</label>
+        <input type="number" asp-for="BoardWidth" min="4" max="20" class="form-control"/>
+    </div>
+
+    <div class="mb-1">
+        <label class="form-label">Board Height:</label>
+        <input type="number" asp-for="BoardHeight" min="4" max="20" class="form-control"/>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Start Game</button>
 </form>

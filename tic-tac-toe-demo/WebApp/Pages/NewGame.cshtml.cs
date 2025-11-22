@@ -1,63 +1,49 @@
-﻿using System.ComponentModel.DataAnnotations;
-using BLL;
+﻿using BLL;
 using DAL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace WebApp.Pages;
 
-public class NewGame : PageModel
+public class NewGameModel : PageModel
 {
-    private readonly IRepository<GameConfiguration> _configRepo;
+    private readonly IRepository<GameConfiguration> _repo;
 
-    public NewGame(IRepository<GameConfiguration> configRepo)
+    public NewGameModel(IRepository<GameConfiguration> repo)
     {
-        _configRepo = configRepo;
-    }
-    
-    public SelectList ConfigurationSelectList { get; set; } = default!;
-
-    [BindProperty]
-    public string ConfigId { get; set; } = default!;
-
-    [BindProperty]
-    [Length(2, 32)]
-    public string Player1Name { get; set; } = default!;
-
-    [BindProperty]
-    [Length(2, 32)]
-    public string Player2Name { get; set; } = default!;
-
-    public async Task OnGetAsync()
-    {
-        await LoadDataAsync();
+        _repo = repo;
     }
 
-    private async Task LoadDataAsync()
+    [BindProperty] public string GameName { get; set; } = "Connect4 - Cylindrical";
+    [BindProperty] public string Player1Name { get; set; } = "Player1";
+    [BindProperty] public string Player2Name { get; set; } = "Player2";
+    [BindProperty] public bool IsVsAi { get; set; }
+    [BindProperty] public int BoardWidth { get; set; } = 5;
+    [BindProperty] public int BoardHeight { get; set; } = 5;
+
+    public IActionResult OnPost()
     {
-        var data = await _configRepo.ListAsync();
-        var data2 = data.Select(i => new
+        var conf = new GameConfiguration
         {
-            id = i.id,
-            value = i.description
-        }).ToList();
-        
-        ConfigurationSelectList = new SelectList(data2, "id", "value");
-    }
+            Player1Name = Player1Name,
+            Player2Name = Player2Name,
+            IsVsAi = IsVsAi,
+            BoardWidth = BoardWidth,
+            BoardHeight = BoardHeight,
+            Name = GameName
+        };
 
-    public async Task<IActionResult> OnPostAsync()
-    {
-        if (!ModelState.IsValid)
+        conf.BoardState = new List<List<EBoardState>>();
+        for (int y = 0; y < BoardHeight; y++)
         {
-            await LoadDataAsync();
-            return Page();
+            var row = new List<EBoardState>();
+            for (int x = 0; x < BoardWidth; x++)
+                row.Add(EBoardState.Empty);
+            conf.BoardState.Add(row);
         }
-        
-        // TODO: save game
-        
-        // redirect to gameplay
-        return RedirectToPage("./GamePlay", new { id = ConfigId, player1Name = Player1Name, player2Name = Player2Name });
-    }
 
+        var id = _repo.Save(conf);
+
+        return RedirectToPage("GamePlay", new { id });
+    }
 }
