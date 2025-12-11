@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace BLL
 {
@@ -6,37 +7,22 @@ namespace BLL
     {
         private EBoardState[,] GameBoard { get; set; }
         public GameConfiguration GameConfiguration { get; set; }
-        private string Player1Name { get; set; }
-        private string Player2Name { get; set; }
 
         private bool NextMoveByX { get; set; } = true;
 
         private readonly Random _random = new Random();
-
-        public GameBrain(GameConfiguration configuration, string player1Name, string player2Name, int width, int height)
-        {
-            GameConfiguration = configuration;
-            Player1Name = player1Name;
-            Player2Name = player2Name;
-            
-            if (width > 0) GameConfiguration.BoardWidth = width;
-            if (height > 0) GameConfiguration.BoardHeight = height;
-            GameBoard = new EBoardState[configuration.BoardWidth, configuration.BoardHeight];
-        }
         
         public GameBrain(GameConfiguration configuration, string player1Name, string player2Name)
         {
             GameConfiguration = configuration;
-            Player1Name = player1Name;
-            Player2Name = player2Name;
             GameBoard = new EBoardState[configuration.BoardWidth, configuration.BoardHeight];
         }
 
         public EBoardState[,] GetBoard()
         {
-            var gameBoardCopy = new EBoardState[GameConfiguration.BoardWidth, GameConfiguration.BoardHeight];
-            Array.Copy(GameBoard, gameBoardCopy, GameBoard.Length);
-            return gameBoardCopy;
+            var copy = new EBoardState[GameConfiguration.BoardWidth, GameConfiguration.BoardHeight];
+            Array.Copy(GameBoard, copy, GameBoard.Length);
+            return copy;
         }
 
         public bool IsNextPlayerX() => NextMoveByX;
@@ -44,341 +30,282 @@ namespace BLL
         public void ProcessMove(int x)
         {
             if (x < 0 || x >= GameConfiguration.BoardWidth) return;
-            
-            for (int row = GameConfiguration.BoardHeight - 1; row >= 0; row--)
+
+            for (int y = GameConfiguration.BoardHeight - 1; y >= 0; y--)
             {
-                if (GameBoard[x, row] == EBoardState.Empty)
+                if (GameBoard[x, y] == EBoardState.Empty)
                 {
-                    GameBoard[x, row] = NextMoveByX ? EBoardState.X : EBoardState.O;
+                    GameBoard[x, y] = NextMoveByX ? EBoardState.X : EBoardState.O;
                     NextMoveByX = !NextMoveByX;
-                    break;
+                    return;
                 }
             }
         }
 
-        private (int dirX, int dirY) GetDirection(int directionIndex) =>
-            directionIndex switch
+        private int WrapX(int x)
+        {
+            if (!GameConfiguration.IsCylinder)
+                return x;
+
+            return (x + GameConfiguration.BoardWidth) % GameConfiguration.BoardWidth;
+        }
+
+        private int GetFirstFreeRow(int x)
+        {
+            for (int y = GameConfiguration.BoardHeight - 1; y >= 0; y--)
             {
-                0 => (-1, -1), // Diagonal up-left
-                1 => (0, -1),  // Vertical up
-                2 => (1, -1),  // Diagonal up-right
-                3 => (1, 0),   // Horizontal
-                _ => (0, 0)
-            };
+                if (GameBoard[x, y] == EBoardState.Empty)
+                    return y;
+            }
+            return -1;
+        }
 
-        private (int dirX, int dirY) FlipDirection((int dirX, int dirY) direction) =>
-            (-direction.dirX, -direction.dirY);
+        public bool IsBoardFull()
+        {
+            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+                if (GetFirstFreeRow(x) != -1)
+                    return false;
 
+            return true;
+        }
+        
         public EBoardState GetWinner(int x, int y)
         {
-            if (GameBoard[x, y] == EBoardState.Empty) 
-                return EBoardState.Empty;
+            var cell = GameBoard[x, y];
+            if (cell == EBoardState.Empty) return EBoardState.Empty;
 
-            var startCell = GameBoard[x, y];
-
-            for (int directionIndex = 0; directionIndex < 4; directionIndex++)
+            int[][] dirs =
             {
-                var (dirX, dirY) = GetDirection(directionIndex);
+                new[] {1, 0},  // horizontal
+                new[] {0, 1},  // vertical
+                new[] {1, 1},  // diag down-right
+                new[] {1, -1}  // diag up-right
+            };
+
+            foreach (var d in dirs)
+            {
                 int count = 1;
                 
-                int nextX = x + dirX;
-                int nextY = y + dirY;
-
-                while (nextY >= 0 &&
-                       nextY < GameConfiguration.BoardHeight &&
-                       count < GameConfiguration.WinCondition)
-                {
-                    nextX = (nextX + GameConfiguration.BoardWidth) % GameConfiguration.BoardWidth;
-
-                    if (GameBoard[nextX, nextY] != startCell)
-                        break;
-
-                    count++;
-                    nextX += dirX;
-                    nextY += dirY;
-                }
-                
-                (dirX, dirY) = FlipDirection((dirX, dirY));
-
-                nextX = x + dirX;
-                nextY = y + dirY;
-
-                while (nextY >= 0 &&
-                       nextY < GameConfiguration.BoardHeight &&
-                       count < GameConfiguration.WinCondition)
-                {
-                    nextX = (nextX + GameConfiguration.BoardWidth) % GameConfiguration.BoardWidth;
-
-                    if (GameBoard[nextX, nextY] != startCell)
-                        break;
-
-                    count++;
-                    nextX += dirX;
-                    nextY += dirY;
-                }
+                count += CountDirection(x, y, d[0], d[1], cell);
+                count += CountDirection(x, y, -d[0], -d[1], cell);
 
                 if (count >= GameConfiguration.WinCondition)
-                    return startCell == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
+                    return cell == EBoardState.X ? EBoardState.XWin : EBoardState.OWin;
             }
 
             return EBoardState.Empty;
         }
 
-        
+        private int CountDirection(int startX, int startY, int dirX, int dirY, EBoardState cell)
+        {
+            int count = 0;
+            int x = startX + dirX;
+            int y = startY + dirY;
+
+            while (y >= 0 && y < GameConfiguration.BoardHeight)
+            {
+                x = GameConfiguration.IsCylinder ? WrapX(x) : x;
+
+                if (x < 0 || x >= GameConfiguration.BoardWidth)
+                    break;
+
+                if (GameBoard[x, y] != cell)
+                    break;
+
+                count++;
+                x += dirX;
+                y += dirY;
+            }
+
+            return count;
+        }
+
+        public EBoardState GetAnyWinner()
+        {
+            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+            {
+                for (int y = 0; y < GameConfiguration.BoardHeight; y++)
+                {
+                    var w = GetWinner(x, y);
+                    if (w == EBoardState.XWin || w == EBoardState.OWin)
+                        return w;
+                }
+            }
+            return EBoardState.Empty;
+        }
+
         public List<List<EBoardState>> GetBoardAsList()
         {
             var list = new List<List<EBoardState>>();
+
             for (int y = 0; y < GameConfiguration.BoardHeight; y++)
             {
                 var row = new List<EBoardState>();
                 for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-                {
                     row.Add(GameBoard[x, y]);
-                }
                 list.Add(row);
             }
             return list;
         }
 
-        public void SetBoardFromList(List<List<EBoardState>>? list)
+        public void SetBoardFromList(List<List<EBoardState>> board)
         {
-            if (list == null) return;
+            int xCnt = 0, oCnt = 0;
 
-            int xCount = 0;
-            int oCount = 0;
-
-            for (int y = 0; y < GameConfiguration.BoardHeight && y < list.Count; y++)
+            for (int y = 0; y < GameConfiguration.BoardHeight; y++)
             {
-                for (int x = 0; x < GameConfiguration.BoardWidth && x < list[y].Count; x++)
+                for (int x = 0; x < GameConfiguration.BoardWidth; x++)
                 {
-                    GameBoard[x, y] = list[y][x];
+                    GameBoard[x, y] = board[y][x];
 
-                    if (list[y][x] == EBoardState.X || list[y][x] == EBoardState.XWin)
-                        xCount++;
-
-                    if (list[y][x] == EBoardState.O || list[y][x] == EBoardState.OWin)
-                        oCount++;
+                    if (board[y][x] == EBoardState.X) xCnt++;
+                    if (board[y][x] == EBoardState.O) oCnt++;
                 }
             }
-            NextMoveByX = xCount <= oCount;
-        }
 
-        public GameConfiguration GetConfiguration()
-        {
-            return GameConfiguration;
+            NextMoveByX = xCnt <= oCnt;
         }
         
+        public GameConfiguration GetConfiguration() { return GameConfiguration; }
+
         public void MakeAiMove()
         {
-            if (!GameConfiguration.IsVsAi) return;
-            if (IsNextPlayerX()) return;
+            var aiPiece = IsNextPlayerX() ? EBoardState.X : EBoardState.O;
+            var humanPiece = aiPiece == EBoardState.X ? EBoardState.O : EBoardState.X;
 
-            switch (GameConfiguration.AiDifficulty)
+            int depth = GameConfiguration.AiDifficulty switch
             {
-                case "Easy":
-                    MakeRandomMove();
-                    break;
-                case "Normal":
-                    MakeMediumMove();
-                    break;
-                case "Hard":
-                    MakeHardMove();
-                    break;
-                default:
-                    MakeRandomMove();
-                    break;
-            }
-        }
-
-        private int GetFirstFreeRow(int x)
-        {
-            if (x < 0 || x >= GameConfiguration.BoardWidth) return -1;
-
-            for (int row = GameConfiguration.BoardHeight - 1; row >= 0; row--)
-            {
-                if (GameBoard[x, row] == EBoardState.Empty)
-                    return row;
-            }
-            return -1;
-        }
-
-        private bool WouldMoveWin(int x, EBoardState player)
-        {
-            var row = GetFirstFreeRow(x);
-            if (row == -1) return false;
-
-            var original = GameBoard[x, row];
-            GameBoard[x, row] = player;
-
-            var res = GetWinner(x, row);
-
-            GameBoard[x, row] = original;
-
-            return (player == EBoardState.X && res == EBoardState.XWin)
-                   || (player == EBoardState.O && res == EBoardState.OWin);
-        }
-
-        private void MakeRandomMove()
-        {
-            var freeColumns = new List<int>();
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) != -1)
-                    freeColumns.Add(x);
-            }
-
-            if (freeColumns.Count == 0) return;
-
-            int choice = freeColumns[_random.Next(freeColumns.Count)];
-            ProcessMove(choice);
-        }
-
-        private void MakeMediumMove()
-        {
-            var aiPiece = EBoardState.O;
-            var humanPiece = EBoardState.X;
-
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) == -1) continue;
-                if (WouldMoveWin(x, aiPiece))
-                {
-                    ProcessMove(x);
-                    return;
-                }
-            }
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) == -1) continue;
-                if (WouldMoveWin(x, humanPiece))
-                {
-                    ProcessMove(x);
-                    return;
-                }
-            }
-
-            var freeColumns = new List<int>();
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) != -1)
-                    freeColumns.Add(x);
-            }
-            if (freeColumns.Count == 0) return;
-
-            int center = GameConfiguration.BoardWidth / 2;
-            freeColumns.Sort((a, b) =>
-                Math.Abs(a - center).CompareTo(Math.Abs(b - center)));
-
-            int take = Math.Min(3, freeColumns.Count);
-            int choice = freeColumns[_random.Next(take)];
-            ProcessMove(choice);
-        }
-        
-        private int EvaluateMoveScore(int x, EBoardState aiPiece, EBoardState humanPiece)
-        {
-            int row = GetFirstFreeRow(x);
-            if (row == -1) return int.MinValue;
-            
-            GameBoard[x, row] = aiPiece;
-            
-            if (WouldMoveWin(x, aiPiece))
-            {
-                GameBoard[x, row] = EBoardState.Empty;
-                return 100000;
-            }
-
-            int losingReplies = 0;
-            int aiThreats = 0;
-            
-            for (int hx = 0; hx < GameConfiguration.BoardWidth; hx++)
-            {
-                if (GetFirstFreeRow(hx) == -1) continue;
-
-                if (WouldMoveWin(hx, humanPiece))
-                {
-                    losingReplies++;
-                }
-            }
-            
-            for (int ax = 0; ax < GameConfiguration.BoardWidth; ax++)
-            {
-                if (GetFirstFreeRow(ax) == -1) continue;
-
-                if (WouldMoveWin(ax, aiPiece))
-                {
-                    aiThreats++;
-                }
-            }
-            
-            int center = GameConfiguration.BoardWidth / 2;
-            int centerDistance = Math.Abs(x - center);
-            
-            GameBoard[x, row] = EBoardState.Empty;
-            int score = 0;
-            score += aiThreats * 10;
-            score -= losingReplies * 50;
-            score -= centerDistance;
-
-            return score;
-        }
-
-
-        private void MakeHardMove()
-        {
-            var aiPiece = EBoardState.O;
-            var humanPiece = EBoardState.X;
-
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) == -1) continue;
-                if (WouldMoveWin(x, aiPiece))
-                {
-                    ProcessMove(x);
-                    return;
-                }
-            }
-            
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) == -1) continue;
-                if (WouldMoveWin(x, humanPiece))
-                {
-                    ProcessMove(x);
-                    return;
-                }
-            }
-
-            var candidateColumns = new List<int>();
-            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
-            {
-                if (GetFirstFreeRow(x) != -1)
-                    candidateColumns.Add(x);
-            }
-
-            if (candidateColumns.Count == 0) return;
+                "Easy" => 2,
+                "Normal" => 4,
+                "Hard" => 6,
+                _ => 3
+            };
 
             int bestScore = int.MinValue;
-            var bestColumns = new List<int>();
+            int bestMove = -1;
 
-            foreach (var col in candidateColumns)
+            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
             {
-                int score = EvaluateMoveScore(col, aiPiece, humanPiece);
+                int row = GetFirstFreeRow(x);
+                if (row == -1) continue;
+
+                GameBoard[x, row] = aiPiece;
+
+                int score =
+                    Minimax(depth - 1, int.MinValue + 1, int.MaxValue - 1,
+                        false, aiPiece, humanPiece);
+
+                GameBoard[x, row] = EBoardState.Empty;
 
                 if (score > bestScore)
                 {
                     bestScore = score;
-                    bestColumns.Clear();
-                    bestColumns.Add(col);
-                }
-                else if (score == bestScore)
-                {
-                    bestColumns.Add(col);
+                    bestMove = x;
                 }
             }
-            int choice = bestColumns[_random.Next(bestColumns.Count)];
-            ProcessMove(choice);
+
+            if (bestMove != -1)
+                ProcessMove(bestMove);
         }
 
 
+        private int EvaluateBoard(EBoardState aiPiece, EBoardState humanPiece)
+        {
+            int score = 0;
+            int center = GameConfiguration.BoardWidth / 2;
+            for (int y = 0; y < GameConfiguration.BoardHeight; y++)
+            {
+                if (GameBoard[center, y] == aiPiece) score += 3;
+                if (GameBoard[center, y] == humanPiece) score -= 3;
+            }
+
+            // Immediate win/loss potential
+            for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+            {
+                int row = GetFirstFreeRow(x);
+                if (row == -1) continue;
+
+                // Simulate AI win
+                GameBoard[x, row] = aiPiece;
+                if (GetWinner(x, row) == (aiPiece == EBoardState.X ? EBoardState.XWin : EBoardState.OWin))
+                    score += 50;
+
+                // Simulate human win
+                GameBoard[x, row] = humanPiece;
+                if (GetWinner(x, row) == (humanPiece == EBoardState.X ? EBoardState.XWin : EBoardState.OWin))
+                    score -= 60;
+
+                GameBoard[x, row] = EBoardState.Empty;
+            }
+
+            return score;
+        }
+
+        private int Minimax(int depth, int alpha, int beta, bool maximizing,
+            EBoardState aiPiece, EBoardState humanPiece)
+        {
+            var winner = GetAnyWinner();
+
+            if (winner == EBoardState.XWin || winner == EBoardState.OWin ||
+                depth == 0 || IsBoardFull())
+            {
+                if ((winner == EBoardState.XWin && aiPiece == EBoardState.X) ||
+                    (winner == EBoardState.OWin && aiPiece == EBoardState.O))
+                    return 1000000 + depth;
+
+                if ((winner == EBoardState.XWin && humanPiece == EBoardState.X) ||
+                    (winner == EBoardState.OWin && humanPiece == EBoardState.O))
+                    return -1000000 - depth;
+
+                return EvaluateBoard(aiPiece, humanPiece);
+            }
+
+            if (maximizing)
+            {
+                int best = int.MinValue;
+
+                for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+                {
+                    int row = GetFirstFreeRow(x);
+                    if (row == -1) continue;
+
+                    GameBoard[x, row] = aiPiece;
+
+                    int eval = Minimax(depth - 1, alpha, beta, false, aiPiece, humanPiece);
+
+                    GameBoard[x, row] = EBoardState.Empty;
+
+                    if (eval > best) best = eval;
+                    if (eval > alpha) alpha = eval;
+
+                    if (beta <= alpha) break;
+                }
+
+                return best;
+            }
+            else
+            {
+                int best = int.MaxValue;
+
+                for (int x = 0; x < GameConfiguration.BoardWidth; x++)
+                {
+                    int row = GetFirstFreeRow(x);
+                    if (row == -1) continue;
+
+                    GameBoard[x, row] = humanPiece;
+
+                    int eval = Minimax(depth - 1, alpha, beta, true, aiPiece, humanPiece);
+
+                    GameBoard[x, row] = EBoardState.Empty;
+
+                    if (eval < best) best = eval;
+                    if (eval < beta) beta = eval;
+
+                    if (beta <= alpha) break;
+                }
+
+                return best;
+            }
+        }
     }
 }

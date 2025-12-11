@@ -38,6 +38,12 @@ menu0.AddMenuItem("u", "Customized new game", () =>
     int width = ReadDimension("Enter width for the game (kuni 30): ", 30);
     int height = ReadDimension("Enter height for the game (kuni 30): ", 30);
 
+    int winCondition = ReadDimension("Enter win condition (2–5): ", 5);
+
+    Console.Write("Choose board type (1 = Classical, 2 = Cylinder): ");
+    var mode = Console.ReadLine();
+    bool isCylinder = mode == "2";
+
     Console.Write("Enter name for Player 1: ");
     var p1 = Console.ReadLine();
     if (string.IsNullOrWhiteSpace(p1))
@@ -48,7 +54,16 @@ menu0.AddMenuItem("u", "Customized new game", () =>
     if (string.IsNullOrWhiteSpace(p2))
         p2 = "Player 2";
 
-    var controller = new GameController(configRepo, p1, p2, width, height);
+    var controller = new GameController(
+        configRepo,
+        p1,
+        p2,
+        width,
+        height,
+        winCondition,
+        isCylinder
+    );
+
     controller.GameLoop();
     return "abc";
 });
@@ -62,10 +77,10 @@ int ReadDimension(string prompt, int max)
 
         if (int.TryParse(input, out int value))
         {
-            if (value >= 4 && value <= max)
+            if (value >= 2 && value <= max)
                 return value;
 
-            Console.WriteLine($"Value must be between 4 and {max}!");
+            Console.WriteLine($"Value must be between 2 and {max}!");
         }
         else
         {
@@ -74,9 +89,7 @@ int ReadDimension(string prompt, int max)
     }
 }
 
-
 var menuConfig = new Menu("Connect4 Configurations", EMenuLevel.First);
-
 
 menuConfig.AddMenuItem("l", "Load", () =>
 {

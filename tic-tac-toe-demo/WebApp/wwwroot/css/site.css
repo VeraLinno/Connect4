@@ -65,7 +65,7 @@ td.outer, th.outer {
   left: 50%;
   transform: translateX(-50%);
 
-  background: rgba(60, 179, 113, 0.85);
+  background: rgba(60, 179, 113, 0.75);
   padding: 20px 40px;
   border-radius: 12px;
 

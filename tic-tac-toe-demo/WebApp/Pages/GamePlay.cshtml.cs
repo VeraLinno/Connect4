@@ -18,7 +18,6 @@ public class GamePlay : PageModel
     public GameBrain GameBrain { get; set; } = default!;
     public string CurrentPlayer { get; set; } = default!;
 
-
     public EBoardState Winner { get; set; } = EBoardState.Empty;
     public bool GameOver => Winner == EBoardState.XWin || Winner == EBoardState.OWin;
 
@@ -30,9 +29,6 @@ public class GamePlay : PageModel
         GameId = id;
         var conf = _configRepo.Load(id);
 
-        if (conf == null)
-            return RedirectToPage("Index");
-
         GameBrain = new GameBrain(
             conf,
             conf.Player1Name,
@@ -40,36 +36,45 @@ public class GamePlay : PageModel
         );
 
         GameBrain.SetBoardFromList(conf.BoardState);
+
         Winner = CheckWinner(conf);
-        
-        if (x.HasValue && Winner == EBoardState.Empty)
+        if (conf.GameMode != "AIVAI" && x.HasValue && Winner == EBoardState.Empty)
         {
             GameBrain.ProcessMove(x.Value);
-
             Winner = CheckWinner(conf);
-            
-            if (Winner == EBoardState.Empty && conf.IsVsAi && !GameBrain.IsNextPlayerX())
+
+            if (conf.GameMode == "PVAI"
+                && Winner == EBoardState.Empty
+                && !GameBrain.IsNextPlayerX())
             {
                 GameBrain.MakeAiMove();
-
                 Winner = CheckWinner(conf);
             }
 
             conf.BoardState = GameBrain.GetBoardAsList();
-            var newId = _configRepo.Save(conf);
-            conf.FileName = newId;
-            GameId = newId;
-
+            _configRepo.Save(conf);
         }
+        if (conf.GameMode == "AIVAI" && Winner == EBoardState.Empty)
+        {
+            while (Winner == EBoardState.Empty && !GameBrain.IsBoardFull())
+            {
+                GameBrain.MakeAiMove();
+                Winner = CheckWinner(conf);
+            }
 
-        CurrentPlayer = Winner != EBoardState.Empty
-            ? string.Empty
-            : GameBrain.IsNextPlayerX()
-                ? $"{conf.Player1Name} (X) turn"
-                : $"{conf.Player2Name} (O) turn";
+            conf.BoardState = GameBrain.GetBoardAsList();
+            _configRepo.Save(conf);
+        }
+        CurrentPlayer =
+            Winner != EBoardState.Empty
+                ? string.Empty
+                : GameBrain.IsNextPlayerX()
+                    ? $"{conf.Player1Name} (X) turn"
+                    : $"{conf.Player2Name} (O) turn";
 
         return Page();
     }
+
 
     private EBoardState CheckWinner(GameConfiguration conf)
     {

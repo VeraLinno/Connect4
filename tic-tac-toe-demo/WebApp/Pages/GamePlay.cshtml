@@ -63,9 +63,12 @@
 
                             @for (int x = 0; x < width; x++)
                             {
-                                <td onclick="redirectToPage(@x)" style="cursor: pointer;">
+                                <td 
+                                    onclick="@(Model.GameBrain.GetConfiguration().GameMode == "AIVAI" ? "" : $"redirectToPage({x})")"
+                                    style="@(Model.GameBrain.GetConfiguration().GameMode == "AIVAI" ? "cursor: default;" : "cursor: pointer;")">
                                     @GetCellRepresentation(board[x, y])
                                 </td>
+
                             }
 
                             @for (int p = width; p < width + half; p++)
@@ -89,6 +92,16 @@
         window.location.href = "?id=@Uri.EscapeDataString(Model.GameId)&x=" + x;
     }
 </script>
+
+@if (Model.GameBrain.GetConfiguration().GameMode == "AIVAI" && !Model.GameOver)
+{
+    <script>
+        setTimeout(() => {
+            window.location.href = "?id=@Model.GameId";
+        }, 1500);
+    </script>
+}
+
 
 @functions {
     private int WrapIndex(int index, int width)

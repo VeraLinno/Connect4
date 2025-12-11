@@ -10,10 +10,13 @@ public class GameConfiguration: BaseEntity
     public int BoardHeight { get; set; } = 5;
     public int WinCondition { get; set; } = 4;
     public bool IsVsAi { get; set; }
+    public string GameMode { get; set; } = "PVP"; 
     public string AiDifficulty { get; set; } = "Easy";
     
     public string Player1Name { get; set; } = "Player1";
     public string Player2Name { get; set; } = "Player2";
+    public bool IsCylinder { get; set; } = false;
+
     public DateTime LastUpdated { get; set; }
     
     [NotMapped]

@@ -17,10 +17,12 @@ public class NewGameModel : PageModel
     [BindProperty] public string GameName { get; set; } = "Connect4 - Cylindrical";
     [BindProperty] public string Player1Name { get; set; } = "Player1";
     [BindProperty] public string Player2Name { get; set; } = "Player2";
-    [BindProperty] public bool IsVsAi { get; set; }
     [BindProperty] public int BoardWidth { get; set; } = 5;
     [BindProperty] public int BoardHeight { get; set; } = 5;
-    public string AiDifficulty { get; set; } = "Easy";
+    [BindProperty] public int WinCondition { get; set; } = 4;
+    [BindProperty] public string GameMode { get; set; } = "PVP"; 
+    [BindProperty] public string BoardMode { get; set; } = "Classical";
+    [BindProperty] public string AiDifficulty { get; set; } = "Easy";
 
     public IActionResult OnPost()
     {
@@ -28,14 +30,15 @@ public class NewGameModel : PageModel
         {
             Player1Name = Player1Name,
             Player2Name = Player2Name,
-            IsVsAi = IsVsAi,
-            AiDifficulty = IsVsAi ? AiDifficulty : "Easy",
+            GameMode = GameMode,
+            AiDifficulty = AiDifficulty,
             BoardWidth = BoardWidth,
             BoardHeight = BoardHeight,
-            Name = GameName
+            Name = GameName,
+            IsCylinder = BoardMode == "Cylindrical",
+            WinCondition = WinCondition
         };
-
-
+        
         conf.BoardState = new List<List<EBoardState>>();
         for (int y = 0; y < BoardHeight; y++)
         {

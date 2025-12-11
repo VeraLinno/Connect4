@@ -11,7 +11,7 @@
     </div>
 
     <br/>
-    <div class="mb-1">
+    <div class="mb-1" id="player1-field">
         <label class="form-label">Player 1 name:</label>
         <input type="text" asp-for="Player1Name" class="form-control board-info-input"/>
     </div>
@@ -21,9 +21,13 @@
         <input type="text" asp-for="Player2Name" class="form-control board-info-input"/>
     </div>
     
-    <div class="mb-1 d-flex align-items-center gap-2">
-        <label for="IsVsAi" class="form-check-label">Play vs AI?</label>
-        <input id="IsVsAi" type="checkbox" asp-for="IsVsAi" class="form-check-input"/>
+    <div class="mb-1">
+        <label class="form-label">Game Mode:</label>
+        <select asp-for="GameMode" class="form-select board-info-input" id="game-mode">
+            <option value="PVP">Player vs Player</option>
+            <option value="PVAI">Player vs AI</option>
+            <option value="AIVAI">AI vs AI</option>
+        </select>
     </div>
 
     <div class="mb-1" id="ai-level-wrapper" style="display:none;">
@@ -37,10 +41,22 @@
     
     <br/>
     <div class="mb-1">
-        <label class="form-label">Board Width</label>
-        <input asp-for="BoardWidth" type="number" min="4" max="20" class="form-control board-size-input"/>
+        <label class="form-label">Board Type:</label>
+        <select asp-for="BoardMode" class="form-select board-info-input">
+            <option value="Classical">Classical</option>
+            <option value="Cylindrical">Cylindrical</option>
+        </select>
     </div>
 
+    <div class="mb-1">
+        <label class="form-label">Win condition:</label>
+        <input asp-for="WinCondition" type="number" min="2" max="5" class="form-control board-size-input"/>
+    </div>
+    
+    <div class="mb-1">
+        <label class="form-label">Board Width:</label>
+        <input asp-for="BoardWidth" type="number" min="4" max="20" class="form-control board-size-input"/>
+    </div>
 
     <div class="mb-1">
         <label class="form-label">Board Height:</label>
@@ -53,23 +69,34 @@
 
 
 <script>
-    const checkbox = document.getElementById("IsVsAi");
+    const mode = document.getElementById("game-mode");
+    const p1Field = document.getElementById("player1-field");
+    const p1Input = document.getElementById("Player1Name");
     const p2Field = document.getElementById("player2-field");
     const p2Input = document.getElementById("Player2Name");
     const aiLevelWrapper = document.getElementById("ai-level-wrapper");
-    
-    function updateAiUi() {
-        if (checkbox.checked) {
-            p2Field.style.display = "none";
-            p2Input.value = "AI";
-            aiLevelWrapper.style.display = "block";
-        } else {
+
+    function updateUi() {
+        if (mode.value === "PVP") {
             p2Field.style.display = "block";
-            p2Input.value = "Player2";
             aiLevelWrapper.style.display = "none";
+            p2Input.value = "Player2";
+        }
+        else if (mode.value === "PVAI") {
+            p2Field.style.display = "none";
+            aiLevelWrapper.style.display = "block";
+            p2Input.value = "AI";
+        }
+        else if (mode.value === "AIVAI") {
+            p2Field.style.display = "none";
+            p1Field.style.display = "none";
+            aiLevelWrapper.style.display = "block";
+            p1Input.value = "AI1";
+            p2Input.value = "AI2";
         }
     }
 
-    checkbox.addEventListener("change", updateAiUi);
-    window.addEventListener("load", updateAiUi);
+    mode.addEventListener("change", updateUi);
+    window.addEventListener("load", updateUi);
 </script>
+

@@ -36,6 +36,13 @@ namespace DAL.Migrations
                     b.Property<int>("BoardWidth")
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("GameMode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCylinder")
+                        .HasColumnType("INTEGER");
+
                     b.Property<bool>("IsVsAi")
                         .HasColumnType("INTEGER");
 
