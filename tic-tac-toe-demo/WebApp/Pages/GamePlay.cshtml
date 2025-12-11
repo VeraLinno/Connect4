@@ -3,44 +3,102 @@
 @using BLL
 @model WebApp.Pages.GamePlay
 
-<h1>GamePlay</h1>
-<div class="row">
-    <div class="col-md-8">
-        <table class="table table-bordered">
-            <tr>
-                <td>&nbsp;</td>
-                @for (int x = 0; x < Model.GameBrain.GetBoard().GetLength(0); x++)
-                {
-                    <td>@GetNumberRepresentation(x + 1)</td>
-                }
-            </tr>
-            @for (int y = 0; y < Model.GameBrain.GetBoard().GetLength(1); y++)
-            {
-                <tr>
-                    <td>@GetNumberRepresentation(y + 1)</td>
-                    @for (int x = 0; x < Model.GameBrain.GetBoard().GetLength(0); x++)
-                    {
-                        <td onclick="redirectToPage(@x,@y)" style="cursor: pointer;">@GetCellRepresentation(Model.GameBrain.GetBoard()[x, y])</td>
-                    }
-                </tr>
-            }
-        </table>
-    </div>
+@{
+    var board = Model.GameBrain.GetBoard();
+    int width = board.GetLength(0);
+    int height = board.GetLength(1);
+    int half = (width + 1) / 2;
+}
+
+<div class="d-flex align-items-center mb-3">
+    <a asp-page="/Index" class="btn btn-primary">Menu</a>
+    <h2 class="flex-grow-1 text-center">Gameplay</h2>
+    <div style="width: 75px;"></div>
 </div>
 
+<div class="mt-3 fs-5 text-center">
+    @Model.CurrentPlayer
+</div>
+
+<div class="row">
+    <div class="d-flex justify-content-center">
+
+        <div class="col-auto mx-auto">
+            <div class="col-auto mx-auto">
+                <table class="table table-bordered text-center mx-auto">
+                    <tr>
+                        <td></td>
+
+                        @for (int p = -half; p < 0; p++)
+                        {
+                            <td class="cylinder-side">
+                                @GetNumberRepresentation(WrapIndex(p, width) + 1)
+                            </td>
+                        }
+
+                        @for (int x = 0; x < width; x++)
+                        {
+                            <td>@GetNumberRepresentation(x + 1)</td>
+                        }
+
+                        @for (int p = width; p < width + half; p++)
+                        {
+                            <td class="cylinder-side">
+                                @GetNumberRepresentation(WrapIndex(p, width) + 1)
+                            </td>
+                        }
+                    </tr>
+
+                    @for (int y = 0; y < height; y++)
+                    {
+                        <tr>
+                            <td>@GetNumberRepresentation(y + 1)</td>
+
+                            @for (int p = -half; p < 0; p++)
+                            {
+                                <td class="cylinder-side">
+                                    @GetCellRepresentation(board[WrapIndex(p, width), y])
+                                </td>
+                            }
+
+                            @for (int x = 0; x < width; x++)
+                            {
+                                <td onclick="redirectToPage(@x)" style="cursor: pointer;">
+                                    @GetCellRepresentation(board[x, y])
+                                </td>
+                            }
+
+                            @for (int p = width; p < width + half; p++)
+                            {
+                                <td class="cylinder-side">
+                                    @GetCellRepresentation(board[WrapIndex(p, width), y])
+                                </td>
+                            }
+                        </tr> 
+                    }
+                </table>
+            </div>
+        </div>
+        
+    </div>
+    </div>
+
+
 <script>
-    // Function to redirect to another page
-    function redirectToPage(x,y) {
-        console.log(x,y);
-        window.location.href = "?id=@Uri.EscapeDataString(Model.GameId)&x=" + x + "&y=" + y;
+    function redirectToPage(x) {
+        window.location.href = "?id=@Uri.EscapeDataString(Model.GameId)&x=" + x;
     }
 </script>
 
-@functions
-{
+@functions {
+    private int WrapIndex(int index, int width)
+    {
+        return ((index % width) + width) % width;
+    }
+
     private static string GetNumberRepresentation(int number)
     {
-        return " " + (number < 10 ? "0" + number : number.ToString());
+        return number < 10 ? " 0" + number : " " + number;
     }
 
     private static string GetCellRepresentation(EBoardState cellValue) =>
@@ -53,4 +111,18 @@
             EBoardState.OWin => "OOO",
             _ => " ? "
         };
+}
+
+@if (Model.GameOver)
+{
+    <div class="alert alert-success fw-bold text-center mx-auto win-overlay">
+        @if (Model.Winner == EBoardState.XWin)
+        {
+            @($"{Model.GameBrain.GetConfiguration().Player1Name} wins!")
+        }
+        else
+        {
+            @($"{Model.GameBrain.GetConfiguration().Player2Name} wins!")
+        }
+    </div>
 }

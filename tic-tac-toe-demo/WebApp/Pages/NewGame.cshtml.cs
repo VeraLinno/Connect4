@@ -20,6 +20,7 @@ public class NewGameModel : PageModel
     [BindProperty] public bool IsVsAi { get; set; }
     [BindProperty] public int BoardWidth { get; set; } = 5;
     [BindProperty] public int BoardHeight { get; set; } = 5;
+    public string AiDifficulty { get; set; } = "Easy";
 
     public IActionResult OnPost()
     {
@@ -28,10 +29,12 @@ public class NewGameModel : PageModel
             Player1Name = Player1Name,
             Player2Name = Player2Name,
             IsVsAi = IsVsAi,
+            AiDifficulty = IsVsAi ? AiDifficulty : "Easy",
             BoardWidth = BoardWidth,
             BoardHeight = BoardHeight,
             Name = GameName
         };
+
 
         conf.BoardState = new List<List<EBoardState>>();
         for (int y = 0; y < BoardHeight; y++)

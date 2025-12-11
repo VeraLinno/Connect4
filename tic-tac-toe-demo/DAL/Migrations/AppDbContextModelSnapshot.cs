@@ -23,6 +23,10 @@ namespace DAL.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AiDifficulty")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<int>("BoardHeight")
                         .HasColumnType("INTEGER");
 
@@ -34,6 +38,9 @@ namespace DAL.Migrations
 
                     b.Property<bool>("IsVsAi")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");

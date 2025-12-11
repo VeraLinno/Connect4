@@ -7,33 +7,69 @@
 
     <div class="mb-1">
         <label class="form-label">Game name:</label>
-        <input type="text" asp-for="GameName" class="form-control"/>
+        <input type="text" asp-for="GameName" class="form-control board-info-input"/>
     </div>
 
+    <br/>
     <div class="mb-1">
-        <label class="form-label">Player 1 Name:</label>
-        <input type="text" asp-for="Player1Name" class="form-control"/>
+        <label class="form-label">Player 1 name:</label>
+        <input type="text" asp-for="Player1Name" class="form-control board-info-input"/>
+    </div>
+    
+    <div class="mb-1" id="player2-field">
+        <label class="form-label">Player 2 name:</label>
+        <input type="text" asp-for="Player2Name" class="form-control board-info-input"/>
+    </div>
+    
+    <div class="mb-1 d-flex align-items-center gap-2">
+        <label for="IsVsAi" class="form-check-label">Play vs AI?</label>
+        <input id="IsVsAi" type="checkbox" asp-for="IsVsAi" class="form-check-input"/>
     </div>
 
+    <div class="mb-1" id="ai-level-wrapper" style="display:none;">
+        <label class="form-label">AI Difficulty:</label>
+        <select asp-for="AiDifficulty" class="form-select board-info-input">
+            <option value="Easy">Easy</option>
+            <option value="Normal">Normal</option>
+            <option value="Hard">Hard</option>
+        </select>
+    </div>
+    
+    <br/>
     <div class="mb-1">
-        <label class="form-label">Player 2 Name:</label>
-        <input type="text" asp-for="Player2Name" class="form-control"/>
+        <label class="form-label">Board Width</label>
+        <input asp-for="BoardWidth" type="number" min="4" max="20" class="form-control board-size-input"/>
     </div>
 
-    <div class="mb-1 form-check">
-        <input type="checkbox" asp-for="IsVsAi" class="form-check-input"/>
-        <label class="form-check-label">Play vs AI?</label>
-    </div>
-
-    <div class="mb-1">
-        <label class="form-label">Board Width:</label>
-        <input type="number" asp-for="BoardWidth" min="4" max="20" class="form-control"/>
-    </div>
 
     <div class="mb-1">
         <label class="form-label">Board Height:</label>
-        <input type="number" asp-for="BoardHeight" min="4" max="20" class="form-control"/>
+        <input type="number" asp-for="BoardHeight" min="4" max="20" class="form-control board-size-input"/>
     </div>
 
+    <br/>
     <button type="submit" class="btn btn-primary">Start Game</button>
 </form>
+
+
+<script>
+    const checkbox = document.getElementById("IsVsAi");
+    const p2Field = document.getElementById("player2-field");
+    const p2Input = document.getElementById("Player2Name");
+    const aiLevelWrapper = document.getElementById("ai-level-wrapper");
+    
+    function updateAiUi() {
+        if (checkbox.checked) {
+            p2Field.style.display = "none";
+            p2Input.value = "AI";
+            aiLevelWrapper.style.display = "block";
+        } else {
+            p2Field.style.display = "block";
+            p2Input.value = "Player2";
+            aiLevelWrapper.style.display = "none";
+        }
+    }
+
+    checkbox.addEventListener("change", updateAiUi);
+    window.addEventListener("load", updateAiUi);
+</script>

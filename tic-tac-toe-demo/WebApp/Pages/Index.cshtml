@@ -16,14 +16,27 @@
     @foreach (var conf in Model.Configurations)
     {
         <tr>
-            <td>@conf.description</td>
+            <td>@conf.Description</td>
 
             <td>
-                <a asp-page="/GamePlay" asp-route-id="@conf.id" class="btn btn-success btn-sm">
-                    Continue
+                @if (conf.Status == "Completed")
+                {
+                    <span class="badge bg-success">Completed</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Active</span>
+                }
+            </td>
+
+            
+            <td>
+                
+                <a asp-page="/GamePlay" asp-route-id="@conf.Id" class="btn btn-success btn-sm">
+                    @(conf.Status == "Completed" ? "View" : "Continue")
                 </a>
 
-                <form method="post" asp-page-handler="Delete" asp-route-id="@conf.id" 
+                <form method="post" asp-page-handler="Delete" asp-route-id="@conf.Id"
                       style="display:inline;">
                     <button type="submit" class="btn btn-secondary btn-sm">
                         Delete

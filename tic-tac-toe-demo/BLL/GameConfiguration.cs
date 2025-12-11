@@ -9,13 +9,18 @@ public class GameConfiguration: BaseEntity
     public int BoardWidth { get; set; } = 5;
     public int BoardHeight { get; set; } = 5;
     public int WinCondition { get; set; } = 4;
-    public bool IsVsAi { get; set; } = false;
+    public bool IsVsAi { get; set; }
+    public string AiDifficulty { get; set; } = "Easy";
     
     public string Player1Name { get; set; } = "Player1";
     public string Player2Name { get; set; } = "Player2";
+    public DateTime LastUpdated { get; set; }
     
     [NotMapped]
     public List<List<EBoardState>>? BoardState { get; set; }
+    
+    [NotMapped]
+    public string? FileName { get; set; }
     
     public string? BoardStateJson
     {

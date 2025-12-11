@@ -40,53 +40,30 @@ public class ConfigRepositoryJson: IRepository<GameConfiguration>
     public string Save(GameConfiguration data)
     {
         var dir = FileSystemHelpers.GetConfigDirectory();
-    
-        // does file exist
-        var existingFile = Directory.EnumerateFiles(dir, "*.json")
-            .FirstOrDefault(file =>
-            {
-                try
-                {
-                    var json = File.ReadAllText(file);
-                    var conf = JsonSerializer.Deserialize<GameConfiguration>(json);
-                    return conf?.Id == data.Id;
-                }
-                catch
-                {
-                    return false;
-                }
-            });
 
-        // data -> json
-        var jsonStr = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-        
-        // new file
-        var safeName = SanitizeFileName(data.Name);
-        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
-        var baseFilename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}";
-        var filename = baseFilename.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
-            ? baseFilename
-            : baseFilename + ".json";
-
-        var fullFileName = Path.Combine(dir, filename);
-        
-        // if exist - delete old one
-        if (existingFile != null && File.Exists(existingFile))
+        // Delete old file if exists
+        if (!string.IsNullOrWhiteSpace(data.FileName))
         {
-            try
-            {
-                File.Delete(existingFile);
-            }
-            catch (IOException ex)
-            {
-                throw new IOException($"Failed to delete old config file {existingFile}", ex);
-            }
+            var oldPath = Path.Combine(dir, data.FileName);
+            if (File.Exists(oldPath))
+                File.Delete(oldPath);
         }
-        
-        File.WriteAllText(fullFileName, jsonStr);
+
+        // Create new filename
+        var safeName = SanitizeFileName(data.Name ?? "Game");
+        var timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH.mm.ss");
+        var filename = $"{safeName} - {data.BoardWidth}x{data.BoardHeight} - win {data.WinCondition} - {timestamp}.json";
+        var fullPath = Path.Combine(dir, filename);
+
+        // Serialize
+        var jsonStr = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(fullPath, jsonStr);
+
+        // Save filename into config object for next time
+        data.FileName = filename;
+
         return filename;
     }
-
 
     private static string SanitizeFileName(string name, int maxLength = 128)
     {
@@ -107,16 +84,25 @@ public class ConfigRepositoryJson: IRepository<GameConfiguration>
     }
 
 
-    public GameConfiguration Load(string id)
+    public GameConfiguration? Load(string id)
     {
-        var fileName = id.EndsWith(".json", StringComparison.OrdinalIgnoreCase) ? id : id + ".json";
-        var fullPath = Path.Combine(FileSystemHelpers.GetConfigDirectory(), fileName);
+        var dir = FileSystemHelpers.GetConfigDirectory();
+        var filename = id.EndsWith(".json") ? id : id + ".json";
+        var fullPath = Path.Combine(dir, filename);
 
-        var jsonText =  File.ReadAllText(fullPath);
+        if (!File.Exists(fullPath))
+            return null;
+
+        var jsonText = File.ReadAllText(fullPath);
         var conf = JsonSerializer.Deserialize<GameConfiguration>(jsonText);
-        
-        return conf ?? throw new NullReferenceException("Json deserialization returned null. Data:" + jsonText);
+
+        if (conf != null)
+            conf.FileName = filename;   // ← SUPER OLULINE
+
+        return conf;
     }
+
+
 
     public void Delete(string id)
     {
