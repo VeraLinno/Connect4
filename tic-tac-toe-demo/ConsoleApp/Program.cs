@@ -40,19 +40,34 @@ menu0.AddMenuItem("u", "Customized new game", () =>
 
     int winCondition = ReadDimension("Enter win condition (2–5): ", 5);
 
-    Console.Write("Choose board type (1 = Classical, 2 = Cylinder): ");
-    var mode = Console.ReadLine();
-    bool isCylinder = mode == "2";
+    Console.WriteLine("Choose board type:");
+    Console.WriteLine("1 - Classical");
+    Console.WriteLine("2 - Cylinder");
+    Console.Write("Your choice: ");
+    bool isCylinder = Console.ReadLine() == "2";
+
+    Console.WriteLine("Choose game mode:");
+    Console.WriteLine("1 - Human vs Human");
+    Console.WriteLine("2 - Human vs AI");
+    Console.WriteLine("3 - AI vs AI");
+    Console.Write("Your choice: ");
+
+    string? modeChoice = Console.ReadLine();
+    string gameMode = modeChoice switch
+    {
+        "1" => "PVP",
+        "2" => "PVE",
+        "3" => "EVE",
+        _ => "PVP"
+    };
 
     Console.Write("Enter name for Player 1: ");
     var p1 = Console.ReadLine();
-    if (string.IsNullOrWhiteSpace(p1))
-        p1 = "Player 1";
+    if (string.IsNullOrWhiteSpace(p1)) p1 = "Player 1";
 
     Console.Write("Enter name for Player 2: ");
     var p2 = Console.ReadLine();
-    if (string.IsNullOrWhiteSpace(p2))
-        p2 = "Player 2";
+    if (string.IsNullOrWhiteSpace(p2)) p2 = "Player 2";
 
     var controller = new GameController(
         configRepo,
@@ -61,7 +76,8 @@ menu0.AddMenuItem("u", "Customized new game", () =>
         width,
         height,
         winCondition,
-        isCylinder
+        isCylinder,
+        gameMode
     );
 
     controller.GameLoop();

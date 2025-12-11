@@ -43,6 +43,7 @@ public class GameController
         int height,
         int winCondition,
         bool isCylinder,
+        string gameMode,
         GameConfiguration? existingConfig = null)
     {
         _configRepo = configRepo;
@@ -57,7 +58,8 @@ public class GameController
                 BoardWidth = width,
                 BoardHeight = height,
                 WinCondition = winCondition,
-                IsCylinder = isCylinder
+                IsCylinder = isCylinder,
+                GameMode = gameMode
             };
 
             _gameBrain = new GameBrain(newConfig, player1Name, player2Name);
@@ -68,6 +70,7 @@ public class GameController
             existingConfig.BoardHeight = height;
             existingConfig.WinCondition = winCondition;
             existingConfig.IsCylinder = isCylinder;
+            existingConfig.GameMode = gameMode;
 
             _gameBrain = new GameBrain(existingConfig, player1Name, player2Name);
             _gameBrain.SetBoardFromList(existingConfig.BoardState);
@@ -83,18 +86,36 @@ public class GameController
         {
             Console.Clear();
 
-            Ui.LoadBoard(_gameBrain.GetBoard(), _gameBrain.GetConfiguration().IsCylinder);
+            var cfg = _gameBrain.GetConfiguration();
+
+            Ui.LoadBoard(_gameBrain.GetBoard(), cfg.IsCylinder);
 
             string nextPlayer = _gameBrain.IsNextPlayerX()
-                ? _gameBrain.GameConfiguration.Player1Name + " (X)"
-                : _gameBrain.GameConfiguration.Player2Name + " (O)";
+                ? cfg.Player1Name + " (X)"
+                : cfg.Player2Name + " (O)";
 
             Ui.ShowNextPlayer(nextPlayer);
 
+            if (cfg.GameMode == "EVE")
+            {
+                Thread.Sleep(600);
+                _gameBrain.MakeAiMove();
+                if (CheckWinOrDraw(ref gameOver)) return;
+                continue;
+            }
+
+            if (cfg.GameMode == "PVE" && !_gameBrain.IsNextPlayerX())
+            {
+                Thread.Sleep(500);
+                _gameBrain.MakeAiMove();
+                if (CheckWinOrDraw(ref gameOver)) return;
+                continue;
+            }
+            
             Console.Write("Choice (column), 's' to save, 'x' to exit: ");
             var input = Console.ReadLine();
 
-            if (input?.ToLower() == "x") break;
+            if (input?.ToLower() == "x") return;
             if (input?.ToLower() == "s") { Save(); continue; }
 
             if (!int.TryParse(input, out int col)) continue;
@@ -104,29 +125,45 @@ public class GameController
 
             _gameBrain.ProcessMove(col);
 
-            int row = FindPlacedRow(col);
-
-            var winner = _gameBrain.GetWinner(col, row);
-            if (winner != EBoardState.Empty)
-            {
-                string winName = winner == EBoardState.XWin
-                    ? _gameBrain.GameConfiguration.Player1Name + " (X)"
-                    : _gameBrain.GameConfiguration.Player2Name + " (O)";
-
-                Ui.GetWinner(winName);
-                Save();
-                return;
-            }
+            if (CheckWinOrDraw(ref gameOver)) return;
         }
     }
 
-    private int FindPlacedRow(int column)
+    private bool CheckWinOrDraw(ref bool gameOver)
     {
-        for (int y = 0; y < _gameBrain.GetBoard().GetLength(1); y++)
-            if (_gameBrain.GetBoard()[column, y] != EBoardState.Empty)
-                return y;
+        var cfg = _gameBrain.GetConfiguration();
+        var board = _gameBrain.GetBoard();
+        int w = board.GetLength(0);
+        int h = board.GetLength(1);
 
-        return 0;
+        for (int x = 0; x < w; x++)
+        {
+            for (int y = 0; y < h; y++)
+            {
+                var result = _gameBrain.GetWinner(x, y);
+                if (result != EBoardState.Empty)
+                {
+                    string winName = result == EBoardState.XWin
+                        ? cfg.Player1Name + " (X)"
+                        : cfg.Player2Name + " (O)";
+
+                    Ui.GetWinner(winName);
+                    Save();
+                    gameOver = true;
+                    return true;
+                }
+            }
+        }
+
+        if (_gameBrain.IsBoardFull())
+        {
+            Console.WriteLine("DRAW! Board is full.");
+            Save();
+            gameOver = true;
+            return true;
+        }
+
+        return false;
     }
 
     private void Save()
