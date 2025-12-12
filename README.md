@@ -11,6 +11,13 @@ This project is a Connect4-style game implemented as both a **Web Application** 
   - Classical board
   - Cylindrical board (horizontal wrap-around)
 - Game state persistence using a database (EF Core + SQLite)
+- game solver (AI)
+- game animations
+- human vs human, human vs ai, ai vs ai
+- difficulty levels for ai
+- desktop app, players take return
+- web app, multiplayer (unlimited amount on parallel games)
+- game can be started in console app, then continued in web - and vice versa
 
 ### Web Application
 - Razor Pages based web app
